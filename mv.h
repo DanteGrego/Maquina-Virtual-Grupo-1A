@@ -1,6 +1,7 @@
 #define TAM_MEMORIA 16384 //16 KiB en Bytes
 #define CANT_REGISTROS 32
 #define CANT_SEGMENTOS 2
+#define TAM_IDENTIFICADOR 5
 
 //registro - codigo
 #define LAR 0
