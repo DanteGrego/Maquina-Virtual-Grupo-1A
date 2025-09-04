@@ -105,26 +105,32 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
     int valor = 0;
     char tipoOperando = obtengoTipoOperando(bytes);
     switch (tipoOperando)
+    {
     case 0:
     { // nulo
+        break;
     }
-    break;
+
     case 1:
     { // registro
         bytes &= 0x000000FF;
         valor = mv->registros[bytes];
+        break;
     }
-    break;
+
     case 2:
     { // inmediato
         bytes &= 0x0000FFFF;
         valor = bytes;
+        break;
     }
-    break;
+
     case 3:
     { // memoria
         bytes &= 0x00FFFFFF;
+        break;
     }
-    break;
+    }
+
     return valor;
 }
