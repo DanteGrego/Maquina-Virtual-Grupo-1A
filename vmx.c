@@ -94,3 +94,37 @@ void inicializarRegistros(Tmv *mv)
     mv->registros[DS] = 256; // 0x0001 0000
     mv->registros[IP] = mv->registros[CS];
 }
+char obtengoTipoOperando(int bytes) // sin testear
+{
+    bytes &= 0xC0000000;
+    bytes >>= 30;
+    return bytes;
+}
+int getValor(Tmv *mv, int bytes) // sin testear/incompleto
+{
+    int valor = 0;
+    char tipoOperando = obtengoTipoOperando(bytes);
+    switch (tipoOperando)
+    case 0:
+    { // nulo
+    }
+    break;
+    case 1:
+    { // registro
+        bytes &= 0x000000FF;
+        valor = mv->registros[bytes];
+    }
+    break;
+    case 2:
+    { // inmediato
+        bytes &= 0x0000FFFF;
+        valor = bytes;
+    }
+    break;
+    case 3:
+    { // memoria
+        bytes &= 0x00FFFFFF;
+    }
+    break;
+    return valor;
+}

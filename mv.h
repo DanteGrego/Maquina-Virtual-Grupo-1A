@@ -33,4 +33,5 @@ int obtenerHigh(int bytes);
 int obtenerLow(int bytes);
 void leerArch(Tmv* mv, char* nomArch);
 int getValor(Tmv* mv, int bytes); //TODO
+char obtengoTipoOperando(int bytes);
 void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
