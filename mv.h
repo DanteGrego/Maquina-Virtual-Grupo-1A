@@ -32,4 +32,5 @@ int combinarHighLow(int bytesHigh, int bytesLow);
 int obtenerHigh(int bytes);
 int obtenerLow(int bytes);
 void leerArch(Tmv* mv, char* nomArch);
-int get(Tmv* mv, int bytes);
+int getValor(Tmv* mv, int bytes); //TODO
+void cargarTablaSegmentos(Tmv* mv, int tamCodigo);

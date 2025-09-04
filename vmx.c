@@ -1,38 +1,91 @@
 #include <stdio.h>
 #include "mv.h"
 
-int vmx(int argc, char* argv[]){
+// TODO una funcion que devuelva los ultimos 5 bits (para el opc)
+// dissasembler
+
+int main(int numeroArgumentos, char *vectorArgumentos[])
+{
     
-    
+* 
+    if (numeroArgumentos < 2)
+    {
+        println("Numero insuficiente de argumentos");
+    }
+    else{
+        
+        
+    }
+
     return 0;
 }
 
-int combinarHighLow(int bytesHigh, int bytesLow){
+int combinarHighLow(int bytesHigh, int bytesLow)
+{
     return (bytesHigh << 16) | (bytesLow & 0x0000FFFF);
 }
 
-int obtenerHigh(int bytes){
+int obtenerHigh(int bytes)
+{
     int res = 0;
     bytes >> 16;
     res = bytes & 0x0000FFFF;
     return res;
 }
 
-int obtenerLow(int bytes){
+int obtenerLow(int bytes)
+{
     return bytes & 0x0000FFFF;
 }
 
-void leerArch(Tmv* mv, char* nomArch){
-    char x;
-    int i = 0;
-    FILE * arch;
-    arch = fopen(nomArch, "rb");
-    
-    //LEER ENCABEZADO ANTES
-
-    while(fscanf("%c",&x) != 0){
-        mv->memoria[i] = x;
-        i++;
-    }
-
+char obtenerOPC(char x)
+{
+    // return c & 0x1F;
 }
+
+void leerArch(Tmv *mv, char *nomArch)
+{
+    char x;
+    int i;
+    int aux;
+    FILE *arch;
+    arch = fopen(nomArch, "rb");
+
+    if (arch != NULL)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            fread(&aux, sizeof(int), 1, arch);
+        }
+
+        int tamCodigo = obtenerLow(aux);
+        cargarTablaSegmentos(mv, tamCodigo);
+
+        i = obtenerHigh(mv->tablaSegmentos[0]);
+
+        while (fread(&x, sizeof(char), 1, arch) != 0)
+        {
+            mv->memoria[i] = x;
+            i++;
+        }
+
+        fclose(arch);
+    }
+    else
+    {
+        printf("El archivo no pudo abrirse\n");
+        exit(-1);
+    }
+}
+
+void cargarTablaSegmentos(Tmv *mv, int tamCodigo)
+{
+    mv->tablaSegmentos[0] = combinarHighLow(0, tamCodigo);
+    mv->tablaSegmentos[1] = combinarHighLow(tamCodigo, TAM_MEMORIA - tamCodigo);
+}
+
+void inicializarRegistros(Tmv* mv){
+    mv->registros[CS] = 0;//0x0000 0000
+    mv->registros[DS] = 256;//0x0001 0000
+    mv->registros[IP] = mv->registros[CS];
+}   
