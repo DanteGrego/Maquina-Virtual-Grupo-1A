@@ -98,12 +98,14 @@ void inicializarRegistros(Tmv *mv)
     mv->registros[DS] = 256; // 0x0001 0000
     mv->registros[IP] = mv->registros[CS];
 }
+
 char obtengoTipoOperando(int bytes) // sin testear
 {
     bytes &= 0xC0000000;
     bytes >>= 30;
     return bytes;
 }
+
 int getValor(Tmv *mv, int bytes) // sin testear/incompleto
 {
     int valor = 0;
@@ -137,4 +139,38 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
     }
 
     return valor;
+}
+
+int obtenerDirFisica(Tmv *mv, int dirLogica)
+{
+    int segmento = obtenerHigh(dirLogica);
+    int offset = obtenerLow(dirLogica);
+
+    int base = obtenerHigh(mv->tablaSegmentos[segmento]);
+    return base + offset;
+}
+
+void leerMemoria(Tmv *mv, int valor)
+{
+    char codRegistro = (valor & 0x1F0000) >> 24;
+    int offsetOp = valor & 0x00FFFF;
+
+    int valRegistro = mv->registros[codRegistro];
+    int baseDS = obtenerDirFisica(mv, DS);
+    int tamDS = obtenerLow(mv->tablaSegmentos[mv->registros[DS]]);
+
+    // la direccion logica del LAR es la direccion logica del registro + el offset del operando
+    mv->registros[LAR] = combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
+    int offsetFisico = obtenerDirFisica(mv, LAR);
+
+    if (offsetFisico >= baseDS && offsetFisico < baseDS + tamDS)
+    {
+        mv->registros[MAR] = combinarHighLow(4, offsetFisico);
+        mv->registros[MBR] = mv->memoria[offsetFisico];
+    }
+    else
+    {
+        printf("Error: Desbordamiento de segmento\n");
+        exit(-1);
+    }
 }

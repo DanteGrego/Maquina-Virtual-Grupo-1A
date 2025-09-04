@@ -36,3 +36,4 @@ void leerArch(Tmv* mv, char* nomArch);
 int getValor(Tmv* mv, int bytes); //TODO
 char obtengoTipoOperando(int bytes);
 void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
+void leerMemoria(Tmv* mv, int valor);
