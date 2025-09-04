@@ -1,20 +1,24 @@
 #include <stdio.h>
 #include "mv.h"
+#include <string.h>
 
 // TODO una funcion que devuelva los ultimos 5 bits (para el opc)
 // dissasembler
 
 int main(int numeroArgumentos, char *vectorArgumentos[])
 {
-    
-* 
+    char *fileName;            // nombre del archivo.vmx
+    char imprimoDesensamblado; // condicion booleana que decide mostrar el codigo desensamblado
     if (numeroArgumentos < 2)
     {
         println("Numero insuficiente de argumentos");
+        return -1;
     }
-    else{
-        
-        
+    else
+    {
+        fileName = vectorArgumentos[1];
+        if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-d") == 0)
+            imprimoDesensamblado = 1;
     }
 
     return 0;
@@ -84,8 +88,9 @@ void cargarTablaSegmentos(Tmv *mv, int tamCodigo)
     mv->tablaSegmentos[1] = combinarHighLow(tamCodigo, TAM_MEMORIA - tamCodigo);
 }
 
-void inicializarRegistros(Tmv* mv){
-    mv->registros[CS] = 0;//0x0000 0000
-    mv->registros[DS] = 256;//0x0001 0000
+void inicializarRegistros(Tmv *mv)
+{
+    mv->registros[CS] = 0;   // 0x0000 0000
+    mv->registros[DS] = 256; // 0x0001 0000
     mv->registros[IP] = mv->registros[CS];
-}   
+}
