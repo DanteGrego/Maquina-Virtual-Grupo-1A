@@ -44,40 +44,44 @@ int obtenerLow(int bytes)
 
 char obtenerOPC(char x)
 {
-    // return c & 0x1F;
+    return x & 0x1F;
 }
 
 void leerArch(Tmv *mv, char *nomArch)
 {
     char x;
     int i;
-    int aux;
+    char cabecera[5], version, tamCodigo[2];
     FILE *arch;
     arch = fopen(nomArch, "rb");
 
     if (arch != NULL)
     {
-        for (int j = 0; j < 2; j++)
+        fread(cabecera, sizeof(char), TAM_IDENTIFICADOR, arch);
+
+        if (strcmp(cabecera, "VMX25") == 0)
         {
-            fread(&aux, sizeof(int), 1, arch);
+            fread(&version, sizeof(char), 1, arch);
+            fread(tamCodigo, sizeof(char), 2, arch);
+
+            cargarTablaSegmentos(mv, tamCodigo[0] + tamCodigo[1] * 256);
+
+            i = obtenerHigh(mv->tablaSegmentos[0]);
+
+            while (fread(&x, sizeof(char), 1, arch) != 0)
+            {
+                mv->memoria[i] = x;
+                i++;
+            }
         }
-
-        int tamCodigo = obtenerLow(aux);
-        cargarTablaSegmentos(mv, tamCodigo);
-
-        i = obtenerHigh(mv->tablaSegmentos[0]);
-
-        while (fread(&x, sizeof(char), 1, arch) != 0)
-        {
-            mv->memoria[i] = x;
-            i++;
-        }
+        else
+            printf("Error: El archivo no es valido\n");
 
         fclose(arch);
     }
     else
     {
-        printf("El archivo no pudo abrirse\n");
+        printf("Error: El archivo no pudo abrirse\n");
         exit(-1);
     }
 }
