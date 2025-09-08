@@ -31,8 +31,8 @@ int combinarHighLow(int bytesHigh, int bytesLow)
 
 int obtenerHigh(int bytes)
 {
-    int res = 0;
-    bytes >> 16;
+    int res;
+    bytes >>= 16;
     res = bytes & 0x0000FFFF;
     return res;
 }
@@ -98,10 +98,10 @@ void inicializarRegistros(Tmv *mv)
     mv->registros[DS] = 256; // 0x0001 0000
     mv->registros[IP] = mv->registros[CS];
 }
-char obtengoTipoOperando(int bytes) // sin testear
+char obtengoTipoOperando(int bytes) // testeado
 {
-    bytes &= 0xC0000000;
     bytes >>= 30;
+    bytes &= 0x00000003;
     return bytes;
 }
 int getValor(Tmv *mv, int bytes) // sin testear/incompleto
@@ -117,7 +117,7 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
 
     case 1:
     { // registro
-        bytes &= 0x000000FF;
+        bytes &= 0x0000001F;
         valor = mv->registros[bytes];
         break;
     }
@@ -130,8 +130,8 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
     }
 
     case 3:
-    { // memoria
-        bytes &= 0x00FFFFFF;
+    { // memoria SIN TERMINAR
+        bytes &= 0x00FFFFFF; 
         break;
     }
     }
