@@ -295,7 +295,7 @@ void leerMemoria(Tmv mv, int valor)
 
     int valRegistro = mv.registros[codRegistro];
     int baseDS = obtenerDirFisica(mv, DS);
-    int tamDS = obtenerLow(mv.tablaSegmentos[mv->registros[DS]]);
+    int tamDS = obtenerLow(mv.tablaSegmentos[mv.registros[DS]]);
 
     // la direccion logica del LAR es la direccion logica del registro + el offset del operando
     mv.registros[LAR] = combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
@@ -304,7 +304,7 @@ void leerMemoria(Tmv mv, int valor)
     if (offsetFisico >= baseDS && offsetFisico < baseDS + tamDS)
     {
         mv.registros[MAR] = combinarHighLow(4, offsetFisico);
-        mv.registros[MBR] = mv->memoria[offsetFisico];
+        mv.registros[MBR] = mv.memoria[offsetFisico];
     }
     else
     {
