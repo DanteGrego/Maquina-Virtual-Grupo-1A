@@ -39,3 +39,5 @@ char obtengoTipoOperando(int bytes);
 void cargarTablaSegmentos(Tmv mv, int tamCodigo);
 void leerMemoria(Tmv mv, int valor);
 int obtenerDirLogica(Tmv mv, int valor);
+int leerValOperando(Tmv mv, int top, int posOp);
+void leerInstruccion(Tmv mv);
