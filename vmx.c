@@ -149,7 +149,7 @@ char obtengoTipoOperando(int bytes) // sin testear
     return bytes;
 }
 
-int getValor(Tmv mv, int bytes) // sin testear/incompleto
+int getValor(Tmv mv, int bytes) // sin testear/incompleto 
 {
     int valor = 0;
     char tipoOperando = obtengoTipoOperando(bytes);
@@ -200,26 +200,44 @@ char* getMnemonic(int code) {
         case 0x08: return "NOT";
         case 0x0F: return "STOP";
 
-        case 0x10: return "MOV";
-        case 0x11: return "ADD";
-        case 0x12: return "SUB";
-        case 0x13: return "MUL";
-        case 0x14: return "DIV";
-        case 0x15: return "CMP";
-        case 0x16: return "SHL";
-        case 0x17: return "SHR";
-        case 0x18: return "SAR";
-        case 0x19: return "AND";
-        case 0x1A: return "OR";
-        case 0x1B: return "XOR";
-        case 0x1C: return "SWAP";
-        case 0x1D: return "LDL";
-        case 0x1E: return "LDH";
-        case 0x1F: return "RND";
+    case 0x10:
+        return "MOV";
+    case 0x11:
+        return "ADD";
+    case 0x12:
+        return "SUB";
+    case 0x13:
+        return "MUL";
+    case 0x14:
+        return "DIV";
+    case 0x15:
+        return "CMP";
+    case 0x16:
+        return "SHL";
+    case 0x17:
+        return "SHR";
+    case 0x18:
+        return "SAR";
+    case 0x19:
+        return "AND";
+    case 0x1A:
+        return "OR";
+    case 0x1B:
+        return "XOR";
+    case 0x1C:
+        return "SWAP";
+    case 0x1D:
+        return "LDL";
+    case 0x1E:
+        return "LDH";
+    case 0x1F:
+        return "RND";
 
-        default: return "UNKNOWN";
+    default:
+        return "UNKNOWN";
     }
 }
+
 
 void disassembler(Tmv mv){
     int aux = obtenerHigh(mv.tablaSegmentos[0]);
@@ -256,4 +274,44 @@ void disassembler(Tmv mv){
             printf("Operando invalido");
 
     }
+}
+
+int obtenerDirFisica(Tmv mv, int dirLogica)
+{
+    int segmento = obtenerHigh(dirLogica);
+    int offset = obtenerLow(dirLogica);
+
+    int base = obtenerHigh(mv.tablaSegmentos[segmento]);
+    return base + offset;
+}
+
+void leerMemoria(Tmv mv, int dirLogica){
+    int baseDS = obtenerDirFisica(mv, mv.registros[DS]);
+    int tamDS = obtenerLow(mv.tablaSegmentos[mv.registros[DS]]);
+
+    
+    mv.registros[LAR] = dirLogica;
+    int offsetFisico = obtenerDirFisica(mv, LAR);
+
+    if (offsetFisico >= baseDS && offsetFisico < baseDS + tamDS)
+    {
+        mv.registros[MAR] = combinarHighLow(4, offsetFisico);
+        mv.registros[MBR] = mv.memoria[offsetFisico];
+    }
+    else
+    {
+        printf("Error: Desbordamiento de segmento\n");
+        exit(-1);
+    }
+}
+
+int obtenerDirLogica(Tmv mv, int valor)
+{
+    char codRegistro = (valor & 0x001F0000) >> 24;
+    int offsetOp = valor & 0x0000FFFF;
+
+    int valRegistro = mv.registros[codRegistro];
+
+    // la direccion logica resultante sera la direccion logica del registro + el offset del operando
+    return combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
 }
