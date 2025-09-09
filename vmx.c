@@ -143,9 +143,9 @@ void leerInstruccion(Tmv mv){
 }
 
 char obtengoTipoOperando(int bytes) // sin testear
-{
-    bytes &= 0xC0000000;
-    bytes >>= 30;
+{ 
+    bytes >>= 24;
+    bytes &= 0x000000FF;
     return bytes;
 }
 
@@ -169,7 +169,8 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
 
     case 2:
     { // inmediato
-        bytes &= 0x0000FFFF;
+        bytes <<= 16;
+        bytes >>= 16; //para conservar el signo
         valor = bytes;
         break;
     }
