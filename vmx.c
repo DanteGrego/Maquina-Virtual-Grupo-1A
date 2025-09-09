@@ -254,6 +254,5 @@ void disassembler(Tmv mv){
         }
         else{
             printf("Operando invalido");
-
     }
 }
