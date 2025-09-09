@@ -99,41 +99,47 @@ void inicializarRegistros(Tmv mv)
     mv.registros[IP] = mv.registros[CS];
 }
 
-int leerOperando(Tmv mv, int top, int posOp){
+int leerValOperando(Tmv mv, int top, int posOp){
     int op = 0;
 
-    
-    for(int i = 0; i < top; i++){
-        op <<= 8;
-        op |= mv.memoria[posOp + i];
+    if(top > 0){
+        op = mv.memoria[posOp];
+        op <<= 24;
+        op >>= 24;//escopeta goes brr
+
+        top--;
+        for(int i = 0; i < top; i++){
+            op <<= 8;
+            op |= mv.memoria[posOp + 1];
+        }
     }
 
     return op;
 }
 
 void leerInstruccion(Tmv mv){
-    int posInstruccionFisica = obtenerDirFisica(mv, mv.registros[IP]);
-    char instruccion = mv.memoria[posInstruccionFisica];
+    int posFisInstruccion = obtenerDirFisica(mv, mv.registros[IP]);
+    char instruccion = mv.memoria[posFisInstruccion];
     char top2 = (instruccion >> 6) & 0x03;
     char top1 = (instruccion >> 4) & 0x03;
     char opc = instruccion & 0x1F;
-    mv.registros[OPC] = opc;
-
-    posInstruccionFisica++;
-    int op2 = leerOperando(mv, top2, posInstruccionFisica);
-    posInstruccionFisica += top2;
-    int op1 = leerOperando(mv, top1, posInstruccionFisica);
-    posInstruccionFisica += top1;
+    
+    posFisInstruccion++;//me pongo en posicion para leer op2
+    int valOp2 = leerValOperando(mv, top2, posFisInstruccion);
+    posFisInstruccion += top2;//me pongo en posicion para leer op1
+    int valOp1 = leerValOperando(mv, top1, posFisInstruccion);
+    
 
     if(top1 == 0){
         top1 = top2;
-        op1 = op2;
-        top2 = op2 = 0;
+        valOp1 = valOp2;
+        top2 = valOp2 = 0;//TODO preguntar si cuando hay un solo parametro op2 tiene que ser 0 o no
     }
 
-    mv.registros[OP1] = ((int)top1 << 24) | op1;
-    mv.registros[OP2] = ((int)top2 << 24) | op2;
-    mv.registros[IP] = posInstruccionFisica;
+    mv.registros[OPC] = opc;
+    mv.registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF);//maskeado por si era negativo, sino me tapa el top en el primer byte
+    mv.registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
+    mv.registros[IP] += 1 + top1 + top2;
 }
 
 char obtengoTipoOperando(int bytes) // sin testear
@@ -171,7 +177,42 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
     case 3:
     { // memoria
         bytes &= 0x00FFFFFF;
-        leerMemoria(mv, bytes);
+        leerMemoria(mv, obtenerDirLogica(mv, bytes));
+        valor = mv.registros[MBR];
+        break;
+    }
+    }
+
+    return valor;
+}
+int setValor(Tmv mv, int bytes, int valor) // sin testear/incompleto
+{
+    char tipoOperando = obtengoTipoOperando(bytes);
+    switch (tipoOperando)
+    {
+    case 0:
+    { // nulo
+        break;
+    }
+
+    case 1:
+    { // registro
+        bytes &= 0x000000FF;
+        valor = mv.registros[bytes];
+        break;
+    }
+
+    case 2:
+    { // inmediato
+        bytes &= 0x0000FFFF;
+        valor = bytes;
+        break;
+    }
+
+    case 3:
+    { // memoria
+        bytes &= 0x00FFFFFF;
+        leerMemoria(mv, obtenerDirLogica(mv, bytes));
         valor = mv.registros[MBR];
         break;
     }
@@ -215,102 +256,73 @@ int setValor(Tmv mv, int bytes, int valor) // sin testear/incompleto
     return valor;
 }
 
-char *getMnemonic(int code)
-{
-    switch (code)
-    {
-    case 0x00:
-        return "SYS";
-    case 0x01:
-        return "JMP";
-    case 0x02:
-        return "JZ";
-    case 0x03:
-        return "JP";
-    case 0x04:
-        return "JN";
-    case 0x05:
-        return "JNZ";
-    case 0x06:
-        return "JNP";
-    case 0x07:
-        return "JNN";
-    case 0x08:
-        return "NOT";
-    case 0x0F:
-        return "STOP";
 
-    case 0x10:
-        return "MOV";
-    case 0x11:
-        return "ADD";
-    case 0x12:
-        return "SUB";
-    case 0x13:
-        return "MUL";
-    case 0x14:
-        return "DIV";
-    case 0x15:
-        return "CMP";
-    case 0x16:
-        return "SHL";
-    case 0x17:
-        return "SHR";
-    case 0x18:
-        return "SAR";
-    case 0x19:
-        return "AND";
-    case 0x1A:
-        return "OR";
-    case 0x1B:
-        return "XOR";
-    case 0x1C:
-        return "SWAP";
-    case 0x1D:
-        return "LDL";
-    case 0x1E:
-        return "LDH";
-    case 0x1F:
-        return "RND";
+char* getMnemonic(int code) {
+    switch (code) {
+        case 0x00: return "SYS";
+        case 0x01: return "JMP";
+        case 0x02: return "JZ";
+        case 0x03: return "JP";
+        case 0x04: return "JN";
+        case 0x05: return "JNZ";
+        case 0x06: return "JNP";
+        case 0x07: return "JNN";
+        case 0x08: return "NOT";
+        case 0x0F: return "STOP";
 
-    default:
-        return "UNKNOWN";
+        case 0x10: return "MOV";
+        case 0x11: return "ADD";
+        case 0x12: return "SUB";
+        case 0x13: return "MUL";
+        case 0x14: return "DIV";
+        case 0x15: return "CMP";
+        case 0x16: return "SHL";
+        case 0x17: return "SHR";
+        case 0x18: return "SAR";
+        case 0x19: return "AND";
+        case 0x1A: return "OR";
+        case 0x1B: return "XOR";
+        case 0x1C: return "SWAP";
+        case 0x1D: return "LDL";
+        case 0x1E: return "LDH";
+        case 0x1F: return "RND";
+
+        default: return "UNKNOWN";
     }
 }
 
-void disassembler(Tmv mv)
-{
+void disassembler(Tmv mv){
     int aux = obtenerHigh(mv.tablaSegmentos[0]);
     int i = aux;
     int j;
     int tam = obtenerLow(mv.tablaSegmentos[0]);
     char *nombre;
-    char opc, top1, top2, ins;
+    char opc,top1,top2,ins;
 
-    while (i <= tam)
-    {
-        printf("[%x] ", aux + i);
+    while(i <= tam){
+        printf("[%x] ",aux + i);
         ins = mv.memoria[i];
-        printf("%02x ", ins);
+        printf("%02x ",ins);
 
         opc = (ins & 0x1F);
         if (opc == 0x0F)
         {
             printf("| STOP");
+            
         }
-        else if (opc >= 0x00 && opc <= 0x08)
-        { // 1 operando
+        else if(opc >= 0x00 && opc <= 0x08){ // 1 operando
             top1 = (opc >> 6) & (0x03);
-            for (j = 0; j < top1; j++)
-            {
+            for (j = 0; j < top1; j++){
+
             }
+            ip -= top1;
+            printf("| %s %s",mnemonicos[opc]);
         }
-        else if (opc >= 0x10 && opc <= 0x1F)
-        { // 2 operandos
+        else if(opc >= 0x10 && opc <= 0x1F){ // 2 operandos
             top2 = (opc >> 6) & (0x03);
             top1 = (opc >> 4) & (0x03);
         }
-        else
+        else{
             printf("Operando invalido");
     }
 }

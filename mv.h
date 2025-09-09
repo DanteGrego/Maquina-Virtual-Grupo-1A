@@ -3,6 +3,7 @@
 #define CANT_SEGMENTOS 2
 #define TAM_IDENTIFICADOR 5
 
+
 //registro - codigo
 #define LAR 0
 #define MAR 1
@@ -22,6 +23,8 @@
 #define CS 26
 #define DS 27
 
+char* mnemonicos[CANT_REGISTROS];
+
 typedef struct{
     char memoria[TAM_MEMORIA];
     int registros[CANT_REGISTROS];
@@ -38,3 +41,6 @@ int getValor(Tmv mv, int bytes); //TODO
 char obtengoTipoOperando(int bytes);
 void cargarTablaSegmentos(Tmv mv, int tamCodigo);
 void leerMemoria(Tmv mv, int valor);
+int obtenerDirLogica(Tmv mv, int valor);
+int leerValOperando(Tmv mv, int top, int posOp);
+void leerInstruccion(Tmv mv);
