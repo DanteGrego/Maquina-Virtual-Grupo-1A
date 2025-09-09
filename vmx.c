@@ -285,14 +285,14 @@ int obtenerDirFisica(Tmv mv, int dirLogica)
 }
 
 void leerMemoria(Tmv mv, int dirLogica){
-    int baseDS = obtenerDirFisica(mv, mv.registros[DS]);
-    int tamDS = obtenerLow(mv.tablaSegmentos[mv.registros[DS]]);
+    int baseSegmento = obtenerDirFisica(mv, dirLogica);
+    int tamSegmento = obtenerLow(mv.tablaSegmentos[obtenerHigh(dirLogica)]);
 
     
     mv.registros[LAR] = dirLogica;
     int offsetFisico = obtenerDirFisica(mv, LAR);
 
-    if (offsetFisico >= baseDS && offsetFisico < baseDS + tamDS)
+    if (offsetFisico >= baseSegmento && offsetFisico < baseSegmento + tamSegmento)
     {
         mv.registros[MAR] = combinarHighLow(4, offsetFisico);
         mv.registros[MBR] = mv.memoria[offsetFisico];
