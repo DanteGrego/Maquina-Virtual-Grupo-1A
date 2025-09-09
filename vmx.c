@@ -94,21 +94,24 @@ void cargarTablaSegmentos(Tmv mv, int tamCodigo)
 
 void inicializarRegistros(Tmv mv)
 {
-    mv.registros[CS] = 0x00000000;   // 0x0000 0000
+    mv.registros[CS] = 0x00000000; // 0x0000 0000
     mv.registros[DS] = 0x00010000; // 0x0001 0000
     mv.registros[IP] = mv.registros[CS];
 }
 
-int leerValOperando(Tmv mv, int top, int posOp){
+int leerValOperando(Tmv mv, int top, int posOp)
+{
     int op = 0;
 
-    if(top > 0){
+    if (top > 0)
+    {
         op = mv.memoria[posOp];
         op <<= 24;
-        op >>= 24;//escopeta goes brr
+        op >>= 24; // escopeta goes brr
 
         top--;
-        for(int i = 0; i < top; i++){
+        for (int i = 0; i < top; i++)
+        {
             op <<= 8;
             op |= mv.memoria[posOp + 1];
         }
@@ -117,27 +120,28 @@ int leerValOperando(Tmv mv, int top, int posOp){
     return op;
 }
 
-void leerInstruccion(Tmv mv){
+void leerInstruccion(Tmv mv)
+{
     int posFisInstruccion = obtenerDirFisica(mv, mv.registros[IP]);
     char instruccion = mv.memoria[posFisInstruccion];
     char top2 = (instruccion >> 6) & 0x03;
     char top1 = (instruccion >> 4) & 0x03;
     char opc = instruccion & 0x1F;
-    
-    posFisInstruccion++;//me pongo en posicion para leer op2
-    int valOp2 = leerValOperando(mv, top2, posFisInstruccion);
-    posFisInstruccion += top2;//me pongo en posicion para leer op1
-    int valOp1 = leerValOperando(mv, top1, posFisInstruccion);
-    
 
-    if(top1 == 0){
+    posFisInstruccion++; // me pongo en posicion para leer op2
+    int valOp2 = leerValOperando(mv, top2, posFisInstruccion);
+    posFisInstruccion += top2; // me pongo en posicion para leer op1
+    int valOp1 = leerValOperando(mv, top1, posFisInstruccion);
+
+    if (top1 == 0)
+    {
         top1 = top2;
         valOp1 = valOp2;
-        top2 = valOp2 = 0;//TODO preguntar si cuando hay un solo parametro op2 tiene que ser 0 o no
+        top2 = valOp2 = 0; // TODO preguntar si cuando hay un solo parametro op2 tiene que ser 0 o no
     }
 
     mv.registros[OPC] = opc;
-    mv.registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF);//maskeado por si era negativo, sino me tapa el top en el primer byte
+    mv.registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // maskeado por si era negativo, sino me tapa el top en el primer byte
     mv.registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
     mv.registros[IP] += 1 + top1 + top2;
 }
@@ -149,7 +153,7 @@ char obtengoTipoOperando(int bytes) // sin testear
     return bytes;
 }
 
-int getValor(Tmv mv, int bytes) // sin testear/incompleto 
+int getValor(Tmv mv, int bytes) // sin testear/incompleto
 {
     int valor = 0;
     char tipoOperando = obtengoTipoOperando(bytes);
@@ -186,19 +190,30 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
     return valor;
 }
 
-
-char* getMnemonic(int code) {
-    switch (code) {
-        case 0x00: return "SYS";
-        case 0x01: return "JMP";
-        case 0x02: return "JZ";
-        case 0x03: return "JP";
-        case 0x04: return "JN";
-        case 0x05: return "JNZ";
-        case 0x06: return "JNP";
-        case 0x07: return "JNN";
-        case 0x08: return "NOT";
-        case 0x0F: return "STOP";
+char *getMnemonic(int code)
+{
+    switch (code)
+    {
+    case 0x00:
+        return "SYS";
+    case 0x01:
+        return "JMP";
+    case 0x02:
+        return "JZ";
+    case 0x03:
+        return "JP";
+    case 0x04:
+        return "JN";
+    case 0x05:
+        return "JNZ";
+    case 0x06:
+        return "JNP";
+    case 0x07:
+        return "JNN";
+    case 0x08:
+        return "NOT";
+    case 0x0F:
+        return "STOP";
 
     case 0x10:
         return "MOV";
@@ -238,40 +253,44 @@ char* getMnemonic(int code) {
     }
 }
 
-
-void disassembler(Tmv mv){
+void disassembler(Tmv mv)
+{
     int aux = obtenerHigh(mv.tablaSegmentos[0]);
     int i = aux;
     int j;
     int tam = obtenerLow(mv.tablaSegmentos[0]);
     char *nombre;
-    char opc,top1,top2,ins;
+    char opc, top1, top2, ins;
 
-    while(i <= tam){
-        printf("[%x] ",aux + i);
+    while (i <= tam)
+    {
+        printf("[%x] ", aux + i);
         ins = mv.memoria[i];
-        printf("%02x ",ins);
+        printf("%02x ", ins);
 
         opc = (ins & 0x1F);
         if (opc == 0x0F)
         {
             printf("| STOP");
-            
         }
-        else if(opc >= 0x00 && opc <= 0x08){ // 1 operando
+        else if (opc >= 0x00 && opc <= 0x08)
+        { // 1 operando
             top1 = (opc >> 6) & (0x03);
-            for (j = 0; j < top1; j++){
-
+            for (j = 0; j < top1; j++)
+            {
             }
-            ip -= top1;
-            printf("| %s %s",mnemonicos[opc]);
+
+            printf("| %s %s", mnemonicos[opc]);
         }
-        else if(opc >= 0x10 && opc <= 0x1F){ // 2 operandos
+        else if (opc >= 0x10 && opc <= 0x1F)
+        { // 2 operandos
             top2 = (opc >> 6) & (0x03);
             top1 = (opc >> 4) & (0x03);
         }
-        else{
+        else
+        {
             printf("Operando invalido");
+        }
     }
 }
 
@@ -284,11 +303,11 @@ int obtenerDirFisica(Tmv mv, int dirLogica)
     return base + offset;
 }
 
-void leerMemoria(Tmv mv, int dirLogica){
+void leerMemoria(Tmv mv, int dirLogica)
+{
     int baseSegmento = obtenerDirFisica(mv, dirLogica);
     int tamSegmento = obtenerLow(mv.tablaSegmentos[obtenerHigh(dirLogica)]);
 
-    
     mv.registros[LAR] = dirLogica;
     int offsetFisico = obtenerDirFisica(mv, LAR);
 
