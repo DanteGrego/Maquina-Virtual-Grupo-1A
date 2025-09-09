@@ -99,40 +99,47 @@ void inicializarRegistros(Tmv mv)
     mv.registros[IP] = mv.registros[CS];
 }
 
-int leerOperando(Tmv mv, int top, int posOp){
+int leerValOperando(Tmv mv, int top, int posOp){
     int op = 0;
 
-    for(int i = 0; i < top; i++){
-        op <<= 8;
-        op |= mv.memoria[posOp + i];
+    if(top > 0){
+        op = mv.memoria[posOp];
+        op <<= 24;
+        op >>= 24;//escopeta goes brr
+
+        top--;
+        for(int i = 0; i < top; i++){
+            op <<= 8;
+            op |= mv.memoria[posOp + 1];
+        }
     }
 
     return op;
 }
 
 void leerInstruccion(Tmv mv){
-    int posInstruccion = obtenerDirFisica(mv, mv.registros[IP]);
-    char instruccion = mv.memoria[posInstruccion];
+    int posFisInstruccion = obtenerDirFisica(mv, mv.registros[IP]);
+    char instruccion = mv.memoria[posFisInstruccion];
     char top2 = (instruccion >> 6) & 0x03;
     char top1 = (instruccion >> 4) & 0x03;
     char opc = instruccion & 0x1F;
-    mv.registros[OPC] = opc;
-
-    posInstruccion++;
-    int op2 = leerOperando(mv, top2, posInstruccion);
-    posInstruccion += top2;
-    int op1 = leerOperando(mv, top1, posInstruccion);
-    posInstruccion += top1;
+    
+    posFisInstruccion++;//me pongo en posicion para leer op2
+    int valOp2 = leerValOperando(mv, top2, posFisInstruccion);
+    posFisInstruccion += top2;//me pongo en posicion para leer op1
+    int valOp1 = leerValOperando(mv, top1, posFisInstruccion);
+    
 
     if(top1 == 0){
         top1 = top2;
-        op1 = op2;
-        top2 = op2 = 0;
+        valOp1 = valOp2;
+        top2 = valOp2 = 0;//TODO preguntar si cuando hay un solo parametro op2 tiene que ser 0 o no
     }
 
-    mv.registros[OP1] = ((int)top1 << 24) | op1;
-    mv.registros[OP2] = ((int)top2 << 24) | op2;
-    mv.registros[IP] = posInstruccion;
+    mv.registros[OPC] = opc;
+    mv.registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF);//maskeado por si era negativo, sino me tapa el top en el primer byte
+    mv.registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
+    mv.registros[IP] += 1 + top1 + top2;
 }
 
 char obtengoTipoOperando(int bytes) // sin testear
@@ -170,7 +177,7 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
     case 3:
     { // memoria
         bytes &= 0x00FFFFFF;
-        leerMemoria(mv, bytes);
+        leerMemoria(mv, obtenerDirLogica(mv, bytes));
         valor = mv.registros[MBR];
         break;
     }
@@ -288,27 +295,33 @@ int obtenerDirFisica(Tmv mv, int dirLogica)
     return base + offset;
 }
 
-void leerMemoria(Tmv mv, int valor)
-{
-    char codRegistro = (valor & 0x001F0000) >> 24;
-    int offsetOp = valor & 0x0000FFFF;
+void leerMemoria(Tmv mv, int dirLogica){
+    int baseDS = obtenerDirFisica(mv, mv.registros[DS]);
+    int tamDS = obtenerLow(mv.tablaSegmentos[mv.registros[DS]]);
 
-    int valRegistro = mv.registros[codRegistro];
-    int baseDS = obtenerDirFisica(mv, DS);
-    int tamDS = obtenerLow(mv.tablaSegmentos[mv->registros[DS]]);
-
-    // la direccion logica del LAR es la direccion logica del registro + el offset del operando
-    mv.registros[LAR] = combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
+    
+    mv.registros[LAR] = dirLogica;
     int offsetFisico = obtenerDirFisica(mv, LAR);
 
     if (offsetFisico >= baseDS && offsetFisico < baseDS + tamDS)
     {
         mv.registros[MAR] = combinarHighLow(4, offsetFisico);
-        mv.registros[MBR] = mv->memoria[offsetFisico];
+        mv.registros[MBR] = mv.memoria[offsetFisico];
     }
     else
     {
         printf("Error: Desbordamiento de segmento\n");
         exit(-1);
     }
+}
+
+int obtenerDirLogica(Tmv mv, int valor)
+{
+    char codRegistro = (valor & 0x001F0000) >> 24;
+    int offsetOp = valor & 0x0000FFFF;
+
+    int valRegistro = mv.registros[codRegistro];
+
+    // la direccion logica resultante sera la direccion logica del registro + el offset del operando
+    return combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
 }
