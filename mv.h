@@ -2,6 +2,8 @@
 #define CANT_REGISTROS 32
 #define CANT_SEGMENTOS 2
 #define TAM_IDENTIFICADOR 5
+#define CANT_BYTES_A_LEER 4
+
 
 //registro - codigo
 #define LAR 0
@@ -22,6 +24,8 @@
 #define CS 26
 #define DS 27
 
+char* mnemonicos[CANT_REGISTROS];
+
 typedef struct{
     char memoria[TAM_MEMORIA];
     int registros[CANT_REGISTROS];
@@ -32,8 +36,21 @@ typedef struct{
 int combinarHighLow(int bytesHigh, int bytesLow); 
 int obtenerHigh(int bytes);
 int obtenerLow(int bytes);
-void leerArch(Tmv* mv, char* nomArch);
-int getValor(Tmv* mv, int bytes); //TODO
+int obtenerDirFisica(Tmv mv, int dirLogica);
+void leerArch(Tmv mv, char* nomArch);
+int getValor(Tmv mv, int bytes); //TODO
 char obtengoTipoOperando(int bytes);
-void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
-void leerMemoria(Tmv* mv, int valor);
+void cargarTablaSegmentos(Tmv mv, int tamCodigo);
+void leerMemoria(Tmv mv, int valor);
+int obtenerDirLogica(Tmv mv, int valor);
+int leerValOperando(Tmv mv, int top, int posOp);
+void leerInstruccion(Tmv mv);
+void actualizarCC(Tmv mv, int valor);
+
+void jmp(Tmv mv, int direccion);
+void jz(Tmv mv, int direccion);
+void jnz(Tmv mv, int direccion);
+void jn(Tmv mv, int direccion);
+void jnn(Tmv mv, int direccion);
+void jp(Tmv mv, int direccion);
+void jnp(Tmv mv, int direccion);
