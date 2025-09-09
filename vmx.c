@@ -86,110 +86,6 @@ void leerArch(Tmv mv, char *nomArch)
     }
 }
 
-void cargarTablaSegmentos(Tmv mv, int tamCodigo)
-{
-    mv.tablaSegmentos[0] = combinarHighLow(0, tamCodigo);
-    mv.tablaSegmentos[1] = combinarHighLow(tamCodigo, TAM_MEMORIA - tamCodigo);
-}
-
-void inicializarRegistros(Tmv mv)
-{
-    mv.registros[CS] = 0x00000000; // 0x0000 0000
-    mv.registros[DS] = 0x00010000; // 0x0001 0000
-    mv.registros[IP] = mv.registros[CS];
-}
-
-int leerValOperando(Tmv mv, int top, int posOp)
-{
-    int op = 0;
-
-    if (top > 0)
-    {
-        op = mv.memoria[posOp];
-        op <<= 24;
-        op >>= 24; // escopeta goes brr
-
-        top--;
-        for (int i = 0; i < top; i++)
-        {
-            op <<= 8;
-            op |= mv.memoria[posOp + 1];
-        }
-    }
-
-    return op;
-}
-
-void leerInstruccion(Tmv mv)
-{
-    int posFisInstruccion = obtenerDirFisica(mv, mv.registros[IP]);
-    char instruccion = mv.memoria[posFisInstruccion];
-    char top2 = (instruccion >> 6) & 0x03;
-    char top1 = (instruccion >> 4) & 0x03;
-    char opc = instruccion & 0x1F;
-
-    posFisInstruccion++; // me pongo en posicion para leer op2
-    int valOp2 = leerValOperando(mv, top2, posFisInstruccion);
-    posFisInstruccion += top2; // me pongo en posicion para leer op1
-    int valOp1 = leerValOperando(mv, top1, posFisInstruccion);
-
-    if (top1 == 0)
-    {
-        top1 = top2;
-        valOp1 = valOp2;
-        top2 = valOp2 = 0; // TODO preguntar si cuando hay un solo parametro op2 tiene que ser 0 o no
-    }
-
-    mv.registros[OPC] = opc;
-    mv.registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // maskeado por si era negativo, sino me tapa el top en el primer byte
-    mv.registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
-    mv.registros[IP] += 1 + top1 + top2;
-}
-
-char obtengoTipoOperando(int bytes) // sin testear
-{
-    bytes &= 0xC0000000;
-    bytes >>= 30;
-    return bytes;
-}
-
-int getValor(Tmv mv, int bytes) // sin testear/incompleto
-{
-    int valor = 0;
-    char tipoOperando = obtengoTipoOperando(bytes);
-    switch (tipoOperando)
-    {
-    case 0:
-    { // nulo
-        break;
-    }
-
-    case 1:
-    { // registro
-        bytes &= 0x000000FF;
-        valor = mv.registros[bytes];
-        break;
-    }
-
-    case 2:
-    { // inmediato
-        bytes &= 0x0000FFFF;
-        valor = bytes;
-        break;
-    }
-
-    case 3:
-    { // memoria
-        bytes &= 0x00FFFFFF;
-        leerMemoria(mv, obtenerDirLogica(mv, bytes));
-        valor = mv.registros[MBR];
-        break;
-    }
-    }
-
-    return valor;
-}
-
 char *getMnemonic(int code)
 {
     switch (code)
@@ -294,6 +190,112 @@ void disassembler(Tmv mv)
     }
 }
 
+void cargarTablaSegmentos(Tmv mv, int tamCodigo)
+{
+    mv.tablaSegmentos[0] = combinarHighLow(0, tamCodigo);
+    mv.tablaSegmentos[1] = combinarHighLow(tamCodigo, TAM_MEMORIA - tamCodigo);
+}
+
+void inicializarRegistros(Tmv mv)
+{
+    mv.registros[CS] = 0x00000000; // 0x0000 0000
+    mv.registros[DS] = 0x00010000; // 0x0001 0000
+    mv.registros[IP] = mv.registros[CS];
+}
+
+int leerValOperando(Tmv mv, int top, int posOp)
+{
+    int op = 0;
+
+    if (top > 0)
+    {
+        op = mv.memoria[posOp];
+        op <<= 24;
+        op >>= 24; // escopeta goes brr
+
+        top--;
+        for (int i = 0; i < top; i++)
+        {
+            op <<= 8;
+            op |= mv.memoria[posOp + 1];
+        }
+    }
+
+    return op;
+}
+
+void leerInstruccion(Tmv mv)
+{
+    int posFisInstruccion = obtenerDirFisica(mv, mv.registros[IP]);
+    char instruccion = mv.memoria[posFisInstruccion];
+    char top2 = (instruccion >> 6) & 0x03;
+    char top1 = (instruccion >> 4) & 0x03;
+    char opc = instruccion & 0x1F;
+
+    posFisInstruccion++; // me pongo en posicion para leer op2
+    int valOp2 = leerValOperando(mv, top2, posFisInstruccion);
+    posFisInstruccion += top2; // me pongo en posicion para leer op1
+    int valOp1 = leerValOperando(mv, top1, posFisInstruccion);
+
+    if (top1 == 0)
+    {
+        top1 = top2;
+        valOp1 = valOp2;
+        top2 = valOp2 = 0; // TODO preguntar si cuando hay un solo parametro op2 tiene que ser 0 o no
+    }
+
+    mv.registros[OPC] = opc;
+    mv.registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // maskeado por si era negativo, sino me tapa el top en el primer byte
+    mv.registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
+    mv.registros[IP] += 1 + top1 + top2;
+}
+
+char obtengoTipoOperando(int bytes) // sin testear
+{
+    bytes &= 0xC0000000;
+    bytes >>= 30;
+    return bytes;
+}
+
+int getValor(Tmv mv, int bytes) // sin testear/incompleto
+{
+    int valor = 0;
+    char tipoOperando = obtengoTipoOperando(bytes);
+    switch (tipoOperando)
+    {
+    case 0:
+    { // nulo
+        break;
+    }
+
+    case 1:
+    { // registro
+        bytes &= 0x000000FF;
+        valor = mv.registros[bytes];
+        break;
+    }
+
+    case 2:
+    { // inmediato
+        bytes &= 0x0000FFFF;
+        valor = bytes;
+        break;
+    }
+
+    case 3:
+    { // memoria
+        bytes &= 0x00FFFFFF;
+        leerMemoria(mv, obtenerDirLogica(mv, bytes));
+        valor = mv.registros[MBR];
+        break;
+    }
+    }
+
+    return valor;
+}
+
+
+
 int obtenerDirFisica(Tmv mv, int dirLogica)
 {
     int segmento = obtenerHigh(dirLogica);
@@ -313,7 +315,7 @@ void leerMemoria(Tmv mv, int dirLogica)
 
     if (offsetFisico >= baseSegmento && offsetFisico < baseSegmento + tamSegmento)
     {
-        mv.registros[MAR] = combinarHighLow(4, offsetFisico);
+        mv.registros[MAR] = combinarHighLow(CANT_BYTES_A_LEER, offsetFisico);
         mv.registros[MBR] = mv.memoria[offsetFisico];
     }
     else
@@ -332,4 +334,44 @@ int obtenerDirLogica(Tmv mv, int valor)
 
     // la direccion logica resultante sera la direccion logica del registro + el offset del operando
     return combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
+}
+
+void actualizarCC(Tmv mv, int valor){
+    mv.registros[CC] &= 0x80000000 & (valor < 0);
+    mv.registros[CC] &= 0x40000000 & (valor == 0);
+}
+
+void jmp(Tmv mv, int direccion){
+    mv.registros[IP] = direccion;
+}
+
+void jz(Tmv mv, int direccion){
+    if(mv.registros[CC] >= 0 && (mv.registros[CC] << 1) < 0)
+        jmp(mv, direccion);
+}
+
+void jnz(Tmv mv, int direccion){
+    if((mv.registros[CC] << 1) >= 0)
+        jmp(mv, direccion);
+}
+
+void jn(Tmv mv, int direccion){
+    if(mv.registros[CC] < 0 && (mv.registros[CC] << 1) >= 0)
+        jmp(mv, direccion);
+}
+
+void jnn(Tmv mv, int direccion){
+    if(mv.registros[CC] >= 0)
+        jmp(mv, direccion);
+}
+
+void jp(Tmv mv, int direccion){
+    if(mv.registros[CC] >= 0 && (mv.registros[CC] << 1) >= 0)
+        jmp(mv, direccion);
+}
+
+void jnp(Tmv mv, int direccion){
+    if(mv.registros[CC] < 0 && (mv.registros[CC] << 1) >= 0 || 
+       mv.registros[CC] >= 0 && (mv.registros[CC] << 1) < 0)
+        jmp(mv, direccion);
 }
