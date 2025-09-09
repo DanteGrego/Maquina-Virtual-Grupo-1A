@@ -149,10 +149,10 @@ char obtengoTipoOperando(int bytes) // sin testear
     return bytes;
 }
 
-int getValor(Tmv mv, int bytes) // sin testear/incompleto
+int getValor(Tmv mv, int operando) // sin testear/incompleto
 {
     int valor = 0;
-    char tipoOperando = obtengoTipoOperando(bytes);
+    char tipoOperando = obtengoTipoOperando(operando);
     switch (tipoOperando)
     {
     case 0:
@@ -162,23 +162,23 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
 
     case 1:
     { // registro
-        bytes &= 0x000000FF;
-        valor = mv.registros[bytes];
+        operando &= 0x000000FF;
+        valor = mv.registros[operando];
         break;
     }
 
     case 2:
     { // inmediato
-        bytes <<= 16;
-        bytes >>= 16; //para conservar el signo
-        valor = bytes;
+        operando <<= 16;
+        operando >>= 16; //para conservar el signo
+        valor = operando;
         break;
     }
 
     case 3:
     { // memoria
-        bytes &= 0x00FFFFFF;
-        leerMemoria(mv, obtenerDirLogica(mv, bytes));
+        operando &= 0x00FFFFFF;
+        leerMemoria(mv, obtenerDirLogica(mv, operando));
         valor = mv.registros[MBR];
         break;
     }
@@ -186,75 +186,24 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
 
     return valor;
 }
-int setValor(Tmv mv, int bytes, int valor) // sin testear/incompleto
+void setValor(Tmv mv, int operando, int valor) // sin testear/incompleto
 {
-    char tipoOperando = obtengoTipoOperando(bytes);
+    char tipoOperando = obtengoTipoOperando(operando);
     switch (tipoOperando)
     {
-    case 0:
-    { // nulo
-        break;
-    }
-
     case 1:
     { // registro
-        bytes &= 0x000000FF;
-        valor = mv.registros[bytes];
+        operando &= 0x000000FF;
+        valor = mv.registros[operando];
         break;
     }
-
-    case 2:
-    { // inmediato
-        bytes &= 0x0000FFFF;
-        valor = bytes;
-        break;
-    }
-
     case 3:
     { // memoria
-        bytes &= 0x00FFFFFF;
-        leerMemoria(mv, obtenerDirLogica(mv, bytes));
-        valor = mv.registros[MBR];
+        operando &= 0x00FFFFFF;
+        escribirMemoria(mv, operando, valor); 
         break;
     }
     }
-
-    return valor;
-}
-int setValor(Tmv mv, int bytes, int valor) // sin testear/incompleto
-{
-    char tipoOperando = obtengoTipoOperando(bytes);
-    switch (tipoOperando)
-    {
-    case 0:
-    { // nulo
-        break;
-    }
-
-    case 1:
-    { // registro
-        bytes &= 0x000000FF;
-        valor = mv.registros[bytes];
-        break;
-    }
-
-    case 2:
-    { // inmediato
-        bytes &= 0x0000FFFF;
-        valor = bytes;
-        break;
-    }
-
-    case 3:
-    { // memoria
-        bytes &= 0x00FFFFFF;
-        leerMemoria(mv, bytes);
-        valor = mv.registros[MBR];
-        break;
-    }
-    }
-
-    return valor;
 }
 
 
@@ -316,7 +265,7 @@ void disassembler(Tmv mv){
             for (j = 0; j < top1; j++){
 
             }
-            ip -= top1;
+            //ip -= top1;
             printf("| %s %s",mnemonicos[opc]);
         }
         else if(opc >= 0x10 && opc <= 0x1F){ // 2 operandos
@@ -325,6 +274,7 @@ void disassembler(Tmv mv){
         }
         else{
             printf("Operando invalido");
+        }
     }
 }
 
@@ -337,20 +287,15 @@ int obtenerDirFisica(Tmv mv, int dirLogica)
     return base + offset;
 }
 
-void leerMemoria(Tmv mv, int valor)
-{
-    char codRegistro = (valor & 0x001F0000) >> 24; //indice para vector de registros
-    int offsetOp = obtenerLow(valor);
+void leerMemoria(Tmv mv, int dirLogica){
+    int baseSegmento = obtenerDirFisica(mv, dirLogica);
+    int tamSegmento = obtenerLow(mv.tablaSegmentos[obtenerHigh(dirLogica)]);
 
-    int valRegistro = mv.registros[codRegistro];
-    int baseDS = obtenerDirFisica(mv, DS);
-    int tamDS = obtenerLow(mv.tablaSegmentos[mv.registros[DS]]);
-
-    // la direccion logica del LAR es la direccion logica del registro + el offset del operando
-    mv.registros[LAR] = combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
+    
+    mv.registros[LAR] = dirLogica;
     int offsetFisico = obtenerDirFisica(mv, LAR);
 
-    if (offsetFisico >= baseDS && offsetFisico < baseDS + tamDS)
+    if (offsetFisico >= baseSegmento && offsetFisico < baseSegmento + tamSegmento)
     {
         mv.registros[MAR] = combinarHighLow(4, offsetFisico);
         mv.registros[MBR] = mv.memoria[offsetFisico];
@@ -361,3 +306,24 @@ void leerMemoria(Tmv mv, int valor)
         exit(-1);
     }
 }
+void escribirMemoria(Tmv mv, int dirLogica, int valor){
+    int baseSegmento = obtenerDirFisica(mv, dirLogica);
+    int tamSegmento = obtenerLow(mv.tablaSegmentos[obtenerHigh(dirLogica)]);
+
+    mv.registros[MBR] = valor;
+    mv.registros[LAR] = dirLogica;
+    int offsetFisico = obtenerDirFisica(mv, LAR);
+
+
+    if (offsetFisico >= baseSegmento && offsetFisico < baseSegmento + tamSegmento)
+    {
+        mv.registros[MAR] = combinarHighLow(4, offsetFisico);
+        mv.memoria[offsetFisico] = mv.registros[MBR];
+    }
+    else
+    {
+        printf("Error: Desbordamiento de segmento\n");
+        exit(-1);
+    }
+}
+
