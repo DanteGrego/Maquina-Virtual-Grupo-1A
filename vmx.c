@@ -102,6 +102,7 @@ void inicializarRegistros(Tmv mv)
 int leerOperando(Tmv mv, int top, int posOp){
     int op = 0;
 
+    
     for(int i = 0; i < top; i++){
         op <<= 8;
         op |= mv.memoria[posOp + i];
@@ -111,18 +112,18 @@ int leerOperando(Tmv mv, int top, int posOp){
 }
 
 void leerInstruccion(Tmv mv){
-    int posInstruccion = obtenerDirFisica(mv, mv.registros[IP]);
-    char instruccion = mv.memoria[posInstruccion];
+    int posInstruccionFisica = obtenerDirFisica(mv, mv.registros[IP]);
+    char instruccion = mv.memoria[posInstruccionFisica];
     char top2 = (instruccion >> 6) & 0x03;
     char top1 = (instruccion >> 4) & 0x03;
     char opc = instruccion & 0x1F;
     mv.registros[OPC] = opc;
 
-    posInstruccion++;
-    int op2 = leerOperando(mv, top2, posInstruccion);
-    posInstruccion += top2;
-    int op1 = leerOperando(mv, top1, posInstruccion);
-    posInstruccion += top1;
+    posInstruccionFisica++;
+    int op2 = leerOperando(mv, top2, posInstruccionFisica);
+    posInstruccionFisica += top2;
+    int op1 = leerOperando(mv, top1, posInstruccionFisica);
+    posInstruccionFisica += top1;
 
     if(top1 == 0){
         top1 = top2;
@@ -132,7 +133,7 @@ void leerInstruccion(Tmv mv){
 
     mv.registros[OP1] = ((int)top1 << 24) | op1;
     mv.registros[OP2] = ((int)top2 << 24) | op2;
-    mv.registros[IP] = posInstruccion;
+    mv.registros[IP] = posInstruccionFisica;
 }
 
 char obtengoTipoOperando(int bytes) // sin testear
@@ -145,6 +146,41 @@ char obtengoTipoOperando(int bytes) // sin testear
 int getValor(Tmv mv, int bytes) // sin testear/incompleto
 {
     int valor = 0;
+    char tipoOperando = obtengoTipoOperando(bytes);
+    switch (tipoOperando)
+    {
+    case 0:
+    { // nulo
+        break;
+    }
+
+    case 1:
+    { // registro
+        bytes &= 0x000000FF;
+        valor = mv.registros[bytes];
+        break;
+    }
+
+    case 2:
+    { // inmediato
+        bytes &= 0x0000FFFF;
+        valor = bytes;
+        break;
+    }
+
+    case 3:
+    { // memoria
+        bytes &= 0x00FFFFFF;
+        leerMemoria(mv, bytes);
+        valor = mv.registros[MBR];
+        break;
+    }
+    }
+
+    return valor;
+}
+int setValor(Tmv mv, int bytes, int valor) // sin testear/incompleto
+{
     char tipoOperando = obtengoTipoOperando(bytes);
     switch (tipoOperando)
     {
@@ -290,8 +326,8 @@ int obtenerDirFisica(Tmv mv, int dirLogica)
 
 void leerMemoria(Tmv mv, int valor)
 {
-    char codRegistro = (valor & 0x001F0000) >> 24;
-    int offsetOp = valor & 0x0000FFFF;
+    char codRegistro = (valor & 0x001F0000) >> 24; //indice para vector de registros
+    int offsetOp = obtenerLow(valor);
 
     int valRegistro = mv.registros[codRegistro];
     int baseDS = obtenerDirFisica(mv, DS);
