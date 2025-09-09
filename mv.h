@@ -3,6 +3,7 @@
 #define CANT_SEGMENTOS 2
 #define TAM_IDENTIFICADOR 5
 
+
 //registro - codigo
 #define LAR 0
 #define MAR 1
@@ -21,6 +22,8 @@
 #define CC 17
 #define CS 26
 #define DS 27
+
+char* mnemonicos[CANT_REGISTROS];
 
 typedef struct{
     char memoria[TAM_MEMORIA];

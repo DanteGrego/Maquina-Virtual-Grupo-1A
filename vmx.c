@@ -142,70 +142,115 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
 }
 
 
-char* getMnemonic(int code) {
-    switch (code) {
-        case 0x00: return "SYS";
-        case 0x01: return "JMP";
-        case 0x02: return "JZ";
-        case 0x03: return "JP";
-        case 0x04: return "JN";
-        case 0x05: return "JNZ";
-        case 0x06: return "JNP";
-        case 0x07: return "JNN";
-        case 0x08: return "NOT";
-        case 0x0F: return "STOP";
+void creaMnemonicos() {
+    strcpy(mnemonicos[0x00], "SYS");
+    strcpy(mnemonicos[0x01], "JMP");
+    strcpy(mnemonicos[0x02], "JZ");
+    strcpy(mnemonicos[0x03], "JP");
+    strcpy(mnemonicos[0x04], "JN");
+    strcpy(mnemonicos[0x05], "JNZ");
+    strcpy(mnemonicos[0x06], "JNP");
+    strcpy(mnemonicos[0x07], "JNN");
+    strcpy(mnemonicos[0x08], "NOT");
+    strcpy(mnemonicos[0x0F], "STOP");
 
-        case 0x10: return "MOV";
-        case 0x11: return "ADD";
-        case 0x12: return "SUB";
-        case 0x13: return "MUL";
-        case 0x14: return "DIV";
-        case 0x15: return "CMP";
-        case 0x16: return "SHL";
-        case 0x17: return "SHR";
-        case 0x18: return "SAR";
-        case 0x19: return "AND";
-        case 0x1A: return "OR";
-        case 0x1B: return "XOR";
-        case 0x1C: return "SWAP";
-        case 0x1D: return "LDL";
-        case 0x1E: return "LDH";
-        case 0x1F: return "RND";
+    strcpy(mnemonicos[0x10], "MOV");
+    strcpy(mnemonicos[0x11], "ADD");
+    strcpy(mnemonicos[0x12], "SUB");
+    strcpy(mnemonicos[0x13], "MUL");
+    strcpy(mnemonicos[0x14], "DIV");
+    strcpy(mnemonicos[0x15], "CMP");
+    strcpy(mnemonicos[0x16], "SHL");
+    strcpy(mnemonicos[0x17], "SHR");
+    strcpy(mnemonicos[0x18], "SAR");
+    strcpy(mnemonicos[0x19], "AND");
+    strcpy(mnemonicos[0x1A], "OR");
+    strcpy(mnemonicos[0x1B], "XOR");
+    strcpy(mnemonicos[0x1C], "SWAP");
+    strcpy(mnemonicos[0x1D], "LDL");
+    strcpy(mnemonicos[0x1E], "LDH");
+    strcpy(mnemonicos[0x1F], "RND");
+}
 
-        default: return "UNKNOWN";
+char* getNombreOperando(Tmv mv, int ip, int bytes) // sin testear/incompleto
+{
+    char* valor;
+    switch (bytes)
+    {
+    case 0:
+    { // nulo
+        break;
     }
+
+    case 1:
+    { // registro
+        valor = mv.memoria[++ip];
+        break;
+    }
+
+    case 2:
+    { // inmediato
+        unsigned char high = mv.memoria[++ip];
+        unsigned char low  = mv.memoria[++ip];
+        valor = (high << 8) | low;
+        break;
+    }
+
+    case 3:
+    { // memoria
+        bytes &= 0x00FFFFFF;
+        break;
+    }
+    }
+
+    return valor;
 }
 
 
 void disassembler(Tmv mv){
-    int aux = obtenerHigh(mv.tablaSegmentos[0]);
-    int i = aux;
+    int base = obtenerHigh(mv.tablaSegmentos[0]);
+    int ip = 0;
     int j;
     int tam = obtenerLow(mv.tablaSegmentos[0]);
-    char *nombre;
-    char opc,top1,top2,ins;
+    char *nom1,*nom2;
+    unsigned char opc,top1,top2,ins,aux;
 
-    while(i <= tam){
-        printf("[%x] ",aux + i);
-        ins = mv.memoria[i];
+    do{
+        printf("[%04x] ",base + ip);
+        ins = mv.memoria[ip];
         printf("%02x ",ins);
 
         opc = (ins & 0x1F);
         if(opc == 0x0F){
             printf("| STOP");
+            
         }
         else if(opc >= 0x00 && opc <= 0x08){ // 1 operando
-            top1 = (opc >> 6) & (0x03);
+            top1 = (ins >> 6) & (0x03);
             for (j = 0; j < top1; j++){
-
+                printf("%02x ", (unsigned char) mv.memoria[++ip]);
             }
+            ip -= top1;
+            printf("| %s %s",mnemonicos[opc]);
         }
         else if(opc >= 0x10 && opc <= 0x1F){ // 2 operandos
-            top2 = (opc >> 6) & (0x03);
-            top1 = (opc >> 4) & (0x03);
-        }
-        else
-            printf("Operando invalido");
+            top2 = (ins >> 6) & (0x03);
+            top1 = (ins >> 4) & (0x03);
+            aux = top1 + top2;
 
-    }
+            for(j = 0; j < aux; j++){
+                printf("%02x ", (unsigned char) mv.memoria[++ip]);
+            }
+            ip -= aux;
+            //strcpy(&nom1));
+            //strcpy(&nom2, getNombreOperando());
+            printf("| %s %s, %s",mnemonicos[opc]);
+
+        }
+        else{
+            printf("Operando invalido");
+            opc = 0x0F;
+        }    
+
+    }while ((ip <= tam) && (opc != 0x0F));
 }
