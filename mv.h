@@ -1,8 +1,9 @@
 #define TAM_MEMORIA 16384 //16 KiB en Bytes
 #define CANT_REGISTROS 32
 #define CANT_SEGMENTOS 2
+#define CANT_FORMATOS 5
 #define TAM_IDENTIFICADOR 5
-#define CANT_BYTES_A_LEER 4
+
 
 //registro - codigo
 #define LAR 0
@@ -72,6 +73,8 @@ const char* mnemonicos[CANT_REGISTROS] = {
     [0x1F] = "RND"
 };
 
+char* formatos[CANT_FORMATOS] = {"%d ", "%c ", "%o ", "%x ", "%b "};
+
 typedef struct{
     char memoria[TAM_MEMORIA];
     int registros[CANT_REGISTROS];
@@ -87,7 +90,7 @@ void leerArch(Tmv* mv, char* nomArch);
 int getValor(Tmv* mv, int bytes); //TODO
 char obtengoTipoOperando(int bytes);
 void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
-void leerMemoria(Tmv* mv, int valor);
+void leerMemoria(Tmv* mv, int valor, int cantBytes);
 int obtenerDirLogica(Tmv* mv, int valor);
 int leerValOperando(Tmv* mv, int top, int posOp);
 void leerInstruccion(Tmv* mv);
@@ -99,3 +102,4 @@ void JN(Tmv* mv, int direccion);
 void JNN(Tmv* mv, int direccion);
 void JP(Tmv* mv, int direccion);
 void JNP(Tmv* mv, int direccion);
+void SYS(Tmv* mv, int operando);

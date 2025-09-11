@@ -125,25 +125,25 @@ void inicializarRegistros(Tmv* mv)
     mv->registros[IP] = mv->registros[CS];
 }
 
-int leerValOperando(Tmv *mv, int top, int posOp)
+int leerValMemoria(Tmv *mv, int cantBytes, int posFisica)
 {
-    int op = 0;
+    int valor = 0;
 
-    if (top > 0)
+    if (cantBytes > 0)
     {
-        op = mv->memoria[posOp];
-        op <<= 24;
-        op >>= 24; // escopeta goes brr
+        valor = mv->memoria[posFisica];
+        valor <<= 24;
+        valor >>= 24; // escopeta goes brr
 
-        top--;
-        for (int i = 0; i < top; i++)
+        cantBytes--;
+        for (int i = 0; i < cantBytes; i++)
         {
-            op <<= 8;
-            op |= mv->memoria[posOp + 1];
+            valor <<= 8;
+            valor |= mv->memoria[++posFisica];
         }
     }
 
-    return op;
+    return valor;
 }
 
 void leerInstruccion(Tmv* mv)
@@ -155,9 +155,9 @@ void leerInstruccion(Tmv* mv)
     char opc = instruccion & 0x1F;
 
     posFisInstruccion++; // me pongo en posicion para leer op2
-    int valOp2 = leerValOperando(mv, top2, posFisInstruccion);
+    int valOp2 = leerValMemoria(mv, top2, posFisInstruccion);
     posFisInstruccion += top2; // me pongo en posicion para leer op1
-    int valOp1 = leerValOperando(mv, top1, posFisInstruccion);
+    int valOp1 = leerValMemoria(mv, top1, posFisInstruccion);
 
     if (top1 == 0)
     {
@@ -207,7 +207,7 @@ int getValor(Tmv* mv, int bytes) // sin testear/incompleto
     case 3:
     { // memoria
         bytes &= 0x00FFFFFF;
-        leerMemoria(mv, obtenerDirLogica(mv, bytes));
+        leerMemoria(mv, obtenerDirLogica(mv, bytes), 4);
         valor = mv->registros[MBR];
         break;
     }
@@ -227,7 +227,7 @@ int obtenerDirFisica(Tmv* mv, int dirLogica)
     return base + offset;
 }
 
-void leerMemoria(Tmv* mv, int dirLogica)
+void leerMemoria(Tmv* mv, int dirLogica, int cantBytes)
 {
     int tabla = mv->tablaSegmentos[obtenerHigh(dirLogica)];
     int baseSegmento = obtenerHigh(tabla);
@@ -236,10 +236,10 @@ void leerMemoria(Tmv* mv, int dirLogica)
     mv->registros[LAR] = dirLogica;
     int offsetFisico = obtenerDirFisica(mv, LAR);
 
-    if (offsetFisico >= baseSegmento && offsetFisico < baseSegmento + tamSegmento)
+    if (offsetFisico >= baseSegmento && offsetFisico + cantBytes <= baseSegmento + tamSegmento)
     {
-        mv->registros[MAR] = combinarHighLow(CANT_BYTES_A_LEER, offsetFisico);
-        mv->registros[MBR] = mv->memoria[offsetFisico];
+        mv->registros[MAR] = combinarHighLow(cantBytes, offsetFisico);
+        mv->registros[MBR] = leerValMemoria(mv, cantBytes, offsetFisico);
     }
     else
     {
@@ -402,6 +402,37 @@ void disassembler(const Tmv* mv) {
             if (spaces < 1) spaces = 1;
             printf("%s%*s| UNKNOWN\n", left, spaces, "");
             ip += 1;
+        }
+    }
+}
+
+void SYS(Tmv* mv, int operando){
+    int valor = getValor(mv, operando);
+    int formato = mv->registros[EAX];
+    int cantCeldas = obtenerLow(mv->registros[ECX]);
+    int tamCelda = obtenerHigh(mv->registros[ECX]);
+
+    switch(operando){
+        case 1:{
+            for(int i = 0; i < cantCeldas; i++){
+                printf("[%x]", );
+                leerMemoria(mv, mv->registros[EDX] + i * tamCelda, tamCelda);
+                char mascara = 0x10;
+                for(int j = 0; j < CANT_FORMATOS; j++){
+                    if(formato & mascara != 0){
+                        printf(formatos[j], mv->registros[MBR]);
+                        mascara >>= 1;
+                    }
+                }
+            }
+            break;
+        }
+        case 2:{
+
+            break;
+        }
+        default:{
+            //TODO que hace si sys tiene operando erroneo?
         }
     }
 }
