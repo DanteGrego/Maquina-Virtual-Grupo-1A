@@ -149,46 +149,6 @@ char *getMnemonic(int code)
     }
 }
 
-void disassembler(Tmv mv)
-{
-    int aux = obtenerHigh(mv.tablaSegmentos[0]);
-    int i = aux;
-    int j;
-    int tam = obtenerLow(mv.tablaSegmentos[0]);
-    char *nombre;
-    char opc, top1, top2, ins;
-
-    while (i <= tam)
-    {
-        printf("[%x] ", aux + i);
-        ins = mv.memoria[i];
-        printf("%02x ", ins);
-
-        opc = (ins & 0x1F);
-        if (opc == 0x0F)
-        {
-            printf("| STOP");
-        }
-        else if (opc >= 0x00 && opc <= 0x08)
-        { // 1 operando
-            top1 = (opc >> 6) & (0x03);
-            for (j = 0; j < top1; j++)
-            {
-            }
-
-            printf("| %s %s", mnemonicos[opc]);
-        }
-        else if (opc >= 0x10 && opc <= 0x1F)
-        { // 2 operandos
-            top2 = (opc >> 6) & (0x03);
-            top1 = (opc >> 4) & (0x03);
-        }
-        else
-        {
-            printf("Operando invalido");
-        }
-    }
-}
 
 void cargarTablaSegmentos(Tmv mv, int tamCodigo)
 {
@@ -355,7 +315,7 @@ void jnz(Tmv mv, int direccion){
         jmp(mv, direccion);
 }
 
-void JN(Tmv mv, int direccion){
+void jn(Tmv mv, int direccion){
     if(mv.registros[CC] < 0 && (mv.registros[CC] << 1) >= 0)
         jmp(mv, direccion);
 }
