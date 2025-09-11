@@ -2,6 +2,7 @@
 #define CANT_REGISTROS 32
 #define CANT_SEGMENTOS 2
 #define TAM_IDENTIFICADOR 5
+#define CANT_BYTES_A_LEER 4
 
 
 //registro - codigo
@@ -64,3 +65,15 @@ void leerMemoria(Tmv mv, int valor);
 int obtenerDirLogica(Tmv mv, int valor);
 int leerValOperando(Tmv mv, int top, int posOp);
 void leerInstruccion(Tmv mv);
+<<<<<<< HEAD
+=======
+void actualizarCC(Tmv mv, int valor);
+
+void jmp(Tmv mv, int direccion);
+void jz(Tmv mv, int direccion);
+void jnz(Tmv mv, int direccion);
+void jn(Tmv mv, int direccion);
+void jnn(Tmv mv, int direccion);
+void jp(Tmv mv, int direccion);
+void jnp(Tmv mv, int direccion);
+>>>>>>> fc855414c0373ab6fafbfc7579dc1eb3c5fb7bc9
