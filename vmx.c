@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <time.h>
 #include "mv.h"
 
 // TODO una funcion que devuelva los ultimos 5 bits (para el opc)
@@ -350,10 +351,11 @@ void not(Tmv *mv,int op1){
 }
 
 void rnd(Tmv *mv, int op1, int op2){
-    int valor1 = getValor(mv, op1);
+    srand(time(NULL));
     int valor2 = getValor(mv, op2);
-
-
+    int valor1 = rand() % (valor2);
+    
+    setValor(mv,op1,valor1);
 }
 
 void impNombreOperando(const Tmv* mv, int ip, int tipo) {
