@@ -454,7 +454,7 @@ void SAR (Tmv *mv, int op1, int op2){
 }
 
 void stop(Tmv *mv){
-    setValor(mv->registros[IP], -1); 
+    setValor(mv,mv->registros[IP], -1); 
     exit(0);
 }
 
