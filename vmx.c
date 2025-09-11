@@ -355,7 +355,7 @@ void disassembler(const Tmv* mv) {
     int tam  = obtenerLow(mv->tablaSegmentos[0]);  // tamaño seg código
     int ip   = 0;
 
-    const int COL_PIPE = 32;
+    const int ancho_tab = 32;
 
     while (ip < tam) {
         unsigned char ins  = mv->memoria[ip];
@@ -364,24 +364,24 @@ void disassembler(const Tmv* mv) {
         unsigned char top1 = (ins >> 4) & 0x03;
 
 
-        char left[256];
-        int len = snprintf(left, sizeof(left), "[%04x] %02x ", base + ip, ins);
+        char izq[256];
+        int len = snprintf(izq, sizeof(izq), "[%04x] %02x ", base + ip, ins);
 
         if (opc == 0x0F) { // STOP
-            int spaces = COL_PIPE - len;
-            if (spaces < 1) spaces = 1;
-            printf("%s%*s| STOP\n", left, spaces, "");
+            int espacios = ancho_tab - len;
+            if (espacios < 1) espacios = 1;
+            printf("%s%*s| STOP\n", izq, espacios, "");
             ip += tam;
 
         } else if (opc <= 0x08) { // 1 operando
             top1 = top2;
             int pos = len;
             for (int j = 0; j < top1; j++)
-                pos += snprintf(left + pos, sizeof(left) - pos, "%02x ", (unsigned char) mv->memoria[ip + 1 + j]);
+                pos += snprintf(izq + pos, sizeof(izq) - pos, "%02x ", (unsigned char) mv->memoria[ip + 1 + j]);
 
-            int spaces = COL_PIPE - pos;
-            if (spaces < 1) spaces = 1;
-            printf("%s%*s| %s ", left, spaces, "", mnemonicos[opc]);
+            int espacios = ancho_tab - pos;
+            if (espacios < 1) espacios = 1;
+            printf("%s%*s| %s ", izq, espacios, "", mnemonicos[opc]);
             impNombreOperando(mv, ip, top1);
             printf("\n");
             ip += 1 + top1;
@@ -389,20 +389,20 @@ void disassembler(const Tmv* mv) {
             int aux = top1 + top2;
             int pos = len;
             for (int j = 0; j < aux; j++)
-                pos += snprintf(left + pos, sizeof(left) - pos, "%02x ", (unsigned char) mv->memoria[ip + 1 + j]);
+                pos += snprintf(izq + pos, sizeof(izq) - pos, "%02x ", (unsigned char) mv->memoria[ip + 1 + j]);
 
-            int spaces = COL_PIPE - pos;
+            int spaces = ancho_tab - pos;
             if (spaces < 1) spaces = 1;
-            printf("%s%*s| %s ", left, spaces, "", mnemonicos[opc]);
+            printf("%s%*s| %s ", izq, spaces, "", mnemonicos[opc]);
             impNombreOperando(mv, ip + top2, top1);
             printf(", ");
             impNombreOperando(mv, ip, top2);
             printf("\n");
             ip += 1 + aux;
         } else {
-            int spaces = COL_PIPE - len;
-            if (spaces < 1) spaces = 1;
-            printf("%s%*s| UNKNOWN\n", left, spaces, "");
+            int espacios = ancho_tab - len;
+            if (espacios < 1) espacios = 1;
+            printf("%s%*s| UNKNOWN\n", izq, espacios, "");
             ip += 1;
         }
     }
