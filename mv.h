@@ -4,7 +4,6 @@
 #define TAM_IDENTIFICADOR 5
 #define CANT_BYTES_A_LEER 4
 
-
 //registro - codigo
 #define LAR 0
 #define MAR 1
@@ -24,7 +23,54 @@
 #define CS 26
 #define DS 27
 
-char* mnemonicos[CANT_REGISTROS];
+const char* nombreRegistros[] = {
+    [0]  = "LAR",
+    [1]  = "MAR",
+    [2]  = "MBR",
+    [3]  = "IP",
+    [4]  = "OPC",
+    [5]  = "OP1",
+    [6]  = "OP2",
+    [10] = "EAX",
+    [11] = "EBX",
+    [12] = "ECX",
+    [13] = "EDX",
+    [14] = "EEX",
+    [15] = "EFX",
+    [16] = "AC",
+    [17] = "CC",
+    [26] = "CS",
+    [27] = "DS"
+};
+
+const char* mnemonicos[CANT_REGISTROS] = {
+    [0x00] = "SYS",
+    [0x01] = "JMP",
+    [0x02] = "JZ",
+    [0x03] = "JP",
+    [0x04] = "JN",
+    [0x05] = "JNZ",
+    [0x06] = "JNP",
+    [0x07] = "JNN",
+    [0x08] = "NOT",
+    [0x0F] = "STOP",
+    [0x10] = "MOV",
+    [0x11] = "ADD",
+    [0x12] = "SUB",
+    [0x13] = "MUL",
+    [0x14] = "DIV",
+    [0x15] = "CMP",
+    [0x16] = "SHL",
+    [0x17] = "SHR",
+    [0x18] = "SAR",
+    [0x19] = "AND",
+    [0x1A] = "OR",
+    [0x1B] = "XOR",
+    [0x1C] = "SWAP",
+    [0x1D] = "LDL",
+    [0x1E] = "LDH",
+    [0x1F] = "RND"
+};
 
 typedef struct{
     char memoria[TAM_MEMORIA];
