@@ -11,7 +11,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     char imprimoDesensamblado; // condicion booleana que decide mostrar el codigo desensamblado
     if (numeroArgumentos < 2)
     {
-        println("Numero insuficiente de argumentos");
+        printf("Numero insuficiente de argumentos");
         return -1;
     }
     else
@@ -355,7 +355,7 @@ void jnz(Tmv mv, int direccion){
         jmp(mv, direccion);
 }
 
-void jn(Tmv mv, int direccion){
+void JN(Tmv mv, int direccion){
     if(mv.registros[CC] < 0 && (mv.registros[CC] << 1) >= 0)
         jmp(mv, direccion);
 }

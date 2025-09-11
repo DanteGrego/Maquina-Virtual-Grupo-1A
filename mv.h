@@ -50,7 +50,7 @@ void actualizarCC(Tmv mv, int valor);
 void jmp(Tmv mv, int direccion);
 void jz(Tmv mv, int direccion);
 void jnz(Tmv mv, int direccion);
-void jn(Tmv mv, int direccion);
+void JN(Tmv mv, int direccion);
 void jnn(Tmv mv, int direccion);
 void jp(Tmv mv, int direccion);
 void jnp(Tmv mv, int direccion);
