@@ -1,6 +1,8 @@
 #include <stdio.h>
-#include "mv.h"
+#include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include "mv.h"
 
 // TODO una funcion que devuelva los ultimos 5 bits (para el opc)
 // dissasembler
@@ -336,127 +338,109 @@ void jnp(Tmv mv, int direccion){
         jmp(mv, direccion);
 }
 
-void creaMnemonicos() {
-    strcpy(mnemonicos[0x00], "SYS");
-    strcpy(mnemonicos[0x01], "JMP");
-    strcpy(mnemonicos[0x02], "JZ");
-    strcpy(mnemonicos[0x03], "JP");
-    strcpy(mnemonicos[0x04], "JN");
-    strcpy(mnemonicos[0x05], "JNZ");
-    strcpy(mnemonicos[0x06], "JNP");
-    strcpy(mnemonicos[0x07], "JNN");
-    strcpy(mnemonicos[0x08], "NOT");
-    strcpy(mnemonicos[0x0F], "STOP");
-
-    strcpy(mnemonicos[0x10], "MOV");
-    strcpy(mnemonicos[0x11], "ADD");
-    strcpy(mnemonicos[0x12], "SUB");
-    strcpy(mnemonicos[0x13], "MUL");
-    strcpy(mnemonicos[0x14], "DIV");
-    strcpy(mnemonicos[0x15], "CMP");
-    strcpy(mnemonicos[0x16], "SHL");
-    strcpy(mnemonicos[0x17], "SHR");
-    strcpy(mnemonicos[0x18], "SAR");
-    strcpy(mnemonicos[0x19], "AND");
-    strcpy(mnemonicos[0x1A], "OR");
-    strcpy(mnemonicos[0x1B], "XOR");
-    strcpy(mnemonicos[0x1C], "SWAP");
-    strcpy(mnemonicos[0x1D], "LDL");
-    strcpy(mnemonicos[0x1E], "LDH");
-    strcpy(mnemonicos[0x1F], "RND");
+void stop(Tmv *mv){
+    setValor(mv->registros[IP], -1); 
+    exit(0);
 }
 
-void impNombreOperando(Tmv mv,int ip,int tipo){
-    int num,low,high;
+void not(Tmv *mv,int op1){
+    int valor1 = getValor(mv, op1);
+    valor1 ^= 0xFFFFFFFF; 
+    setValor(mv,op1, valor1);
+}
 
-    switch (tipo)
-    {
-    case 1: { //registro
-        printf("%s",nombreRegistros[mv.memoria[++ip]]);
-        break;
-    }            
-        
-    case 2: { //inmediato
-        high = (unsigned char) mv.memoria[++ip];
-        low = (unsigned char) mv.memoria[++ip];
-        num = (high<<4) | low;
-        num <<= 16;
-        num >>= 16;
-        printf("%d ",num);
-    }
-    
-    case 3: {
-        //offset
-        printf("[");
-        printf("%s",nombreRegistros[mv.memoria[++ip]]);
+void rnd(Tmv *mv, int op1, int op2){
+    int valor1 = getValor(mv, op1);
+    int valor2 = getValor(mv, op2);
 
-        high = (unsigned char)  mv.memoria[++ip];
-        low = (unsigned char) mv.memoria[++ip];
-        num = (high<<4) | low;
-        num <<= 16;
-        num >>= 16;
 
-        if(num > 0)
-            printf("+ %d",num);
-        else if(num < 0)   
-            printf("%d",num);
+}
 
-        printf("]");    
-        break;
-    }
-        
+void impNombreOperando(const Tmv* mv, int ip, int tipo) {
+    int num, low, high;
+    switch (tipo) {
+        case 1: { // registro
+            printf("%s", nombreRegistros[mv->memoria[ip+1]]);
+            break;
+        }
+        case 2: { // inmediato (2 bytes)
+            high = (unsigned char) mv->memoria[ip+1];
+            low  = (unsigned char) mv->memoria[ip+2];
+            num  = (high << 8) | low;
+            num = (num << 16) >> 16;
+            printf("%d", num);
+            break;
+        }
+        case 3: { // memoria: [REG + offset]
+            printf("[");
+            printf("%s", nombreRegistros[mv->memoria[ip+1]]);
+            high = (unsigned char) mv->memoria[ip+2];
+            low  = (unsigned char) mv->memoria[ip+3];
+            num  = (high << 8) | low;
+            num = (num << 16) >> 16;
+            if (num > 0)      printf(" + %d", num);
+            else if (num < 0) printf(" %d", num);
+            printf("]");
+            break;
+        }
+        default: /* tipo 0/nulo */ break;
     }
 }
 
-void disassembler(Tmv mv){
-    int base = obtenerHigh(mv.tablaSegmentos[0]);
-    int ip = 0;
-    int ipaux;
-    int j;
-    int tam = obtenerLow(mv.tablaSegmentos[0]);
-    char *nom1,*nom2;
-    unsigned char opc,top1,top2,op1,op2,ins,aux;
+void disassembler(const Tmv* mv) {
+    int base = obtenerHigh(mv->tablaSegmentos[0]); // base seg código
+    int tam  = obtenerLow(mv->tablaSegmentos[0]);  // tamaño seg código
+    int ip   = 0;
 
-    do{
-        printf("[%04x] ",base + ip);
-        ins = mv.memoria[ip];
-        printf("%02x ",ins);
+    const int COL_PIPE = 32;
 
-        ipaux = ip + 1;
-        opc = (ins & 0x1F);
-        if(opc == 0x0F){
-            printf("| STOP");
-            
+    while (ip < tam) {
+        unsigned char ins  = mv->memoria[ip];
+        unsigned char opc  = ins & 0x1F;
+        unsigned char top2 = (ins >> 6) & 0x03;
+        unsigned char top1 = (ins >> 4) & 0x03;
+
+
+        char left[256];
+        int len = snprintf(left, sizeof(left), "[%04x] %02x ", base + ip, ins);
+
+        if (opc == 0x0F) { // STOP
+            int spaces = COL_PIPE - len;
+            if (spaces < 1) spaces = 1;
+            printf("%s%*s| STOP\n", left, spaces, "");
+            ip += tam;
+
+        } else if (opc <= 0x08) { // 1 operando
+            top1 = top2;
+            int pos = len;
+            for (int j = 0; j < top1; j++)
+                pos += snprintf(left + pos, sizeof(left) - pos, "%02x ", (unsigned char) mv->memoria[ip + 1 + j]);
+
+            int spaces = COL_PIPE - pos;
+            if (spaces < 1) spaces = 1;
+            printf("%s%*s| %s ", left, spaces, "", mnemonicos[opc]);
+            impNombreOperando(mv, ip, top1);
+            printf("\n");
+            ip += 1 + top1;
+        } else if (opc >= 0x10 && opc <= 0x1F) { // 2 operandos
+            int aux = top1 + top2;
+            int pos = len;
+            for (int j = 0; j < aux; j++)
+                pos += snprintf(left + pos, sizeof(left) - pos, "%02x ", (unsigned char) mv->memoria[ip + 1 + j]);
+
+            int spaces = COL_PIPE - pos;
+            if (spaces < 1) spaces = 1;
+            printf("%s%*s| %s ", left, spaces, "", mnemonicos[opc]);
+            impNombreOperando(mv, ip + top2, top1);
+            printf(", ");
+            impNombreOperando(mv, ip, top2);
+            printf("\n");
+            ip += 1 + aux;
+        } else {
+            int spaces = COL_PIPE - len;
+            if (spaces < 1) spaces = 1;
+            printf("%s%*s| UNKNOWN\n", left, spaces, "");
+            ip += 1;
         }
-        else if(opc >= 0x00 && opc <= 0x08){ // 1 operando
-            top1 = (ins >> 6) & (0x03);
-            for (j = 0; j < top1; j++){
-                printf("%02x ", (unsigned char) mv.memoria[++ip]);
-            }
-            ip -= top1;
-            printf("| %s ",mnemonicos[opc]);
-            impNombreOperando(mv,ip,top1);
-        }
-        else if(opc >= 0x10 && opc <= 0x1F){ // 2 operandos
-            top2 = (ins >> 6) & (0x03);
-            top1 = (ins >> 4) & (0x03);
-            aux = top1 + top2;
-
-            for(j = 0; j < aux; j++){
-                printf("%02x ", (unsigned char) mv.memoria[++ip]);
-            }
-            
-
-            printf("| %s ",mnemonicos[opc]);
-            impNombreOperando(mv,ipaux+top2,top1); //imprime op1
-            printf(",");
-            impNombreOperando(mv,ipaux,top2); //imprime op2
-
-        }
-        else{
-            printf("Operando invalido");
-            opc = 0x0F;
-        }    
-
-    }while ((ip <= tam) && (opc != 0x0F));
+    }
 }
