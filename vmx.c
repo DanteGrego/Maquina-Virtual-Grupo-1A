@@ -9,6 +9,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 {
     char *fileName;            // nombre del archivo.vmx
     char imprimoDesensamblado; // condicion booleana que decide mostrar el codigo desensamblado
+    Tmv mv;
     if (numeroArgumentos < 2)
     {
         printf("Numero insuficiente de argumentos");
@@ -16,23 +17,44 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     }
     else
     {
-        strcpy(fileName, vectorArgumentos[1]);
+        fileName = vectorArgumentos[1];
+
         if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-d") == 0)
             imprimoDesensamblado = 1;
+
+        leerArch(&mv, fileName);
+        //if(imprimoDesensamblado)
+         //   disassembler(mv);
+
+        inicializarRegistros(&mv);
+        while(seguirEjecutando(&mv)){
+            leerInstruccion(&mv);
+        }
     }
 
     return 0;
 }
 
+int seguirEjecutando(Tmv* mv){
+    int tabla = mv->tablaSegmentos[obtenerHigh(mv->registros[IP])];
+    int baseCS = obtenerHigh(tabla);
+    int tamCS = obtenerLow(tabla);
+    int dirFisicaIp = obtenerDirFisica(mv, mv->registros[IP]);
+    dirFisicaIp -= baseCS;
+    return dirFisicaIp >= 0 && dirFisicaIp <= tamCS;
+
+}
+
 int combinarHighLow(int bytesHigh, int bytesLow)
 {
+    printf("high: %d\nlow: %d\n", bytesHigh, bytesLow);
     return (bytesHigh << 16) | (bytesLow & 0x0000FFFF);
 }
 
 int obtenerHigh(int bytes)
 {
     int res = 0;
-    bytes >> 16;
+    bytes >>= 16;
     res = bytes & 0x0000FFFF;
     return res;
 }
@@ -47,7 +69,7 @@ char obtenerOPC(char x)
     return x & 0x1F;
 }
 
-void leerArch(Tmv mv, char *nomArch)
+void leerArch(Tmv *mv, char *nomArch)
 {
     char x;
     int i;
@@ -64,20 +86,23 @@ void leerArch(Tmv mv, char *nomArch)
             fread(&version, sizeof(char), 1, arch);
             fread(tamCodigo, sizeof(char), 2, arch);
 
-            cargarTablaSegmentos(mv, tamCodigo[0] + tamCodigo[1] * 256);
+            cargarTablaSegmentos(mv, tamCodigo[1] + tamCodigo[0] * 256);
 
-            i = obtenerHigh(mv.tablaSegmentos[0]);
+            i = obtenerHigh(mv->tablaSegmentos[0]);
 
             while (fread(&x, sizeof(char), 1, arch) != 0)
             {
-                mv.memoria[i] = x;
+                mv->memoria[i] = x;
                 i++;
             }
-        }
-        else
-            printf("Error: El archivo no es valido\n");
 
-        fclose(arch);
+            fclose(arch);
+        }
+        else{
+            printf("Error: El archivo no es valido\n");
+            fclose(arch);
+            exit(-1);
+        }
     }
     else
     {
@@ -86,130 +111,29 @@ void leerArch(Tmv mv, char *nomArch)
     }
 }
 
-char *getMnemonic(int code)
+
+void cargarTablaSegmentos(Tmv *mv, int tamCodigo)
 {
-    switch (code)
-    {
-    case 0x00:
-        return "SYS";
-    case 0x01:
-        return "JMP";
-    case 0x02:
-        return "JZ";
-    case 0x03:
-        return "JP";
-    case 0x04:
-        return "JN";
-    case 0x05:
-        return "JNZ";
-    case 0x06:
-        return "JNP";
-    case 0x07:
-        return "JNN";
-    case 0x08:
-        return "NOT";
-    case 0x0F:
-        return "STOP";
-
-    case 0x10:
-        return "MOV";
-    case 0x11:
-        return "ADD";
-    case 0x12:
-        return "SUB";
-    case 0x13:
-        return "MUL";
-    case 0x14:
-        return "DIV";
-    case 0x15:
-        return "CMP";
-    case 0x16:
-        return "SHL";
-    case 0x17:
-        return "SHR";
-    case 0x18:
-        return "SAR";
-    case 0x19:
-        return "AND";
-    case 0x1A:
-        return "OR";
-    case 0x1B:
-        return "XOR";
-    case 0x1C:
-        return "SWAP";
-    case 0x1D:
-        return "LDL";
-    case 0x1E:
-        return "LDH";
-    case 0x1F:
-        return "RND";
-
-    default:
-        return "UNKNOWN";
-    }
+    mv->tablaSegmentos[0] = combinarHighLow(0, tamCodigo);
+    mv->tablaSegmentos[1] = combinarHighLow(tamCodigo, TAM_MEMORIA - tamCodigo);
+    printf("tabla0: %d, %d\n", obtenerHigh(mv->tablaSegmentos[0]), obtenerLow(mv->tablaSegmentos[0]));
+    printf("tabla1: %d, %d\n", obtenerHigh(mv->tablaSegmentos[1]), obtenerLow(mv->tablaSegmentos[1]));
 }
 
-void disassembler(Tmv mv)
+void inicializarRegistros(Tmv* mv)
 {
-    int aux = obtenerHigh(mv.tablaSegmentos[0]);
-    int i = aux;
-    int j;
-    int tam = obtenerLow(mv.tablaSegmentos[0]);
-    char *nombre;
-    char opc, top1, top2, ins;
-
-    while (i <= tam)
-    {
-        printf("[%x] ", aux + i);
-        ins = mv.memoria[i];
-        printf("%02x ", ins);
-
-        opc = (ins & 0x1F);
-        if (opc == 0x0F)
-        {
-            printf("| STOP");
-        }
-        else if (opc >= 0x00 && opc <= 0x08)
-        { // 1 operando
-            top1 = (opc >> 6) & (0x03);
-            for (j = 0; j < top1; j++)
-            {
-            }
-
-            printf("| %s %s", mnemonicos[opc]);
-        }
-        else if (opc >= 0x10 && opc <= 0x1F)
-        { // 2 operandos
-            top2 = (opc >> 6) & (0x03);
-            top1 = (opc >> 4) & (0x03);
-        }
-        else
-        {
-            printf("Operando invalido");
-        }
-    }
+    mv->registros[CS] = 0x00000000; // 0x0000 0000
+    mv->registros[DS] = 0x00010000; // 0x0001 0000
+    mv->registros[IP] = mv->registros[CS];
 }
 
-void cargarTablaSegmentos(Tmv mv, int tamCodigo)
-{
-    mv.tablaSegmentos[0] = combinarHighLow(0, tamCodigo);
-    mv.tablaSegmentos[1] = combinarHighLow(tamCodigo, TAM_MEMORIA - tamCodigo);
-}
-
-void inicializarRegistros(Tmv mv)
-{
-    mv.registros[CS] = 0x00000000; // 0x0000 0000
-    mv.registros[DS] = 0x00010000; // 0x0001 0000
-    mv.registros[IP] = mv.registros[CS];
-}
-
-int leerValOperando(Tmv mv, int top, int posOp)
+int leerValOperando(Tmv *mv, int top, int posOp)
 {
     int op = 0;
 
     if (top > 0)
     {
-        op = mv.memoria[posOp];
+        op = mv->memoria[posOp];
         op <<= 24;
         op >>= 24; // escopeta goes brr
 
@@ -217,20 +141,28 @@ int leerValOperando(Tmv mv, int top, int posOp)
         for (int i = 0; i < top; i++)
         {
             op <<= 8;
-            op |= mv.memoria[posOp + 1];
+            op |= mv->memoria[posOp + 1];
         }
     }
 
     return op;
 }
 
-void leerInstruccion(Tmv mv)
+void imprimirReg(char* s, int byte){
+    printf("%s: %x, %x\n", s, obtenerHigh(byte), obtenerLow(byte));
+}
+
+void leerInstruccion(Tmv* mv)
 {
-    int posFisInstruccion = obtenerDirFisica(mv, mv.registros[IP]);
-    char instruccion = mv.memoria[posFisInstruccion];
+    int posFisInstruccion = obtenerDirFisica(mv, mv->registros[IP]);
+    imprimirReg("IP", mv->registros[IP]);
+    printf("ip fisico: %d\n", posFisInstruccion);
+    char instruccion = mv->memoria[posFisInstruccion];
+    printf("ins: %x\n", (unsigned char)instruccion);
     char top2 = (instruccion >> 6) & 0x03;
     char top1 = (instruccion >> 4) & 0x03;
     char opc = instruccion & 0x1F;
+    printf("top2: %x, top1: %x, opc: %x\n", top2, top1, opc);
 
     posFisInstruccion++; // me pongo en posicion para leer op2
     int valOp2 = leerValOperando(mv, top2, posFisInstruccion);
@@ -244,10 +176,15 @@ void leerInstruccion(Tmv mv)
         top2 = valOp2 = 0; // TODO preguntar si cuando hay un solo parametro op2 tiene que ser 0 o no
     }
 
-    mv.registros[OPC] = opc;
-    mv.registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // maskeado por si era negativo, sino me tapa el top en el primer byte
-    mv.registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
-    mv.registros[IP] += 1 + top1 + top2;
+    mv->registros[OPC] = opc;
+    mv->registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // maskeado por si era negativo, sino me tapa el top en el primer byte
+    mv->registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
+    mv->registros[IP] += 1 + top1 + top2;
+    imprimirReg("OPC", mv->registros[OPC]);
+    imprimirReg("OP1", mv->registros[OP1]);
+    imprimirReg("OP2", mv->registros[OP2]);
+    imprimirReg("IP", mv->registros[IP]);
+    printf("---\n");
 }
 
 char obtengoTipoOperando(int bytes) // sin testear
@@ -257,7 +194,7 @@ char obtengoTipoOperando(int bytes) // sin testear
     return bytes;
 }
 
-int getValor(Tmv mv, int bytes) // sin testear/incompleto
+int getValor(Tmv* mv, int bytes) // sin testear/incompleto
 {
     int valor = 0;
     char tipoOperando = obtengoTipoOperando(bytes);
@@ -271,7 +208,7 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
     case 1:
     { // registro
         bytes &= 0x000000FF;
-        valor = mv.registros[bytes];
+        valor = mv->registros[bytes];
         break;
     }
 
@@ -286,7 +223,7 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
     { // memoria
         bytes &= 0x00FFFFFF;
         leerMemoria(mv, obtenerDirLogica(mv, bytes));
-        valor = mv.registros[MBR];
+        valor = mv->registros[MBR];
         break;
     }
     }
@@ -296,27 +233,28 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
 
 
 
-int obtenerDirFisica(Tmv mv, int dirLogica)
+int obtenerDirFisica(Tmv* mv, int dirLogica)
 {
     int segmento = obtenerHigh(dirLogica);
     int offset = obtenerLow(dirLogica);
 
-    int base = obtenerHigh(mv.tablaSegmentos[segmento]);
+    int base = obtenerHigh(mv->tablaSegmentos[segmento]);
     return base + offset;
 }
 
-void leerMemoria(Tmv mv, int dirLogica)
+void leerMemoria(Tmv* mv, int dirLogica)
 {
-    int baseSegmento = obtenerDirFisica(mv, dirLogica);
-    int tamSegmento = obtenerLow(mv.tablaSegmentos[obtenerHigh(dirLogica)]);
+    int tabla = mv->tablaSegmentos[obtenerHigh(dirLogica)];
+    int baseSegmento = obtenerHigh(tabla);
+    int tamSegmento = obtenerLow(tabla);
 
-    mv.registros[LAR] = dirLogica;
+    mv->registros[LAR] = dirLogica;
     int offsetFisico = obtenerDirFisica(mv, LAR);
 
     if (offsetFisico >= baseSegmento && offsetFisico < baseSegmento + tamSegmento)
     {
-        mv.registros[MAR] = combinarHighLow(CANT_BYTES_A_LEER, offsetFisico);
-        mv.registros[MBR] = mv.memoria[offsetFisico];
+        mv->registros[MAR] = combinarHighLow(CANT_BYTES_A_LEER, offsetFisico);
+        mv->registros[MBR] = mv->memoria[offsetFisico];
     }
     else
     {
@@ -325,32 +263,32 @@ void leerMemoria(Tmv mv, int dirLogica)
     }
 }
 
-int obtenerDirLogica(Tmv mv, int valor)
+int obtenerDirLogica(Tmv* mv, int valor)
 {
     char codRegistro = (valor & 0x001F0000) >> 24;
     int offsetOp = valor & 0x0000FFFF;
 
-    int valRegistro = mv.registros[codRegistro];
+    int valRegistro = mv->registros[codRegistro];
 
     // la direccion logica resultante sera la direccion logica del registro + el offset del operando
     return combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
 }
 
-void actualizarCC(Tmv mv, int valor){
-    mv.registros[CC] &= 0x80000000 & (valor < 0);
-    mv.registros[CC] &= 0x40000000 & (valor == 0);
+void actualizarCC(Tmv* mv, int valor){
+    mv->registros[CC] &= 0x80000000 & (valor < 0);
+    mv->registros[CC] &= 0x40000000 & (valor == 0);
 }
 
-void jmp(Tmv mv, int direccion){
+void JMP(Tmv mv, int direccion){
     mv.registros[IP] = direccion;
 }
 
-void jz(Tmv mv, int direccion){
+void JZ(Tmv mv, int direccion){
     if(mv.registros[CC] >= 0 && (mv.registros[CC] << 1) < 0)
         jmp(mv, direccion);
 }
 
-void jnz(Tmv mv, int direccion){
+void JNZ(Tmv mv, int direccion){
     if((mv.registros[CC] << 1) >= 0)
         jmp(mv, direccion);
 }
@@ -360,18 +298,18 @@ void JN(Tmv mv, int direccion){
         jmp(mv, direccion);
 }
 
-void jnn(Tmv mv, int direccion){
+void JNN(Tmv mv, int direccion){
     if(mv.registros[CC] >= 0)
         jmp(mv, direccion);
 }
 
-void jp(Tmv mv, int direccion){
+void JP(Tmv mv, int direccion){
     if(mv.registros[CC] >= 0 && (mv.registros[CC] << 1) >= 0)
         jmp(mv, direccion);
 }
 
-void jnp(Tmv mv, int direccion){
-    if(mv.registros[CC] < 0 && (mv.registros[CC] << 1) >= 0 || 
+void JNP(Tmv mv, int direccion){
+    if(mv.registros[CC] < 0 && (mv.registros[CC] << 1) >= 0 ||
        mv.registros[CC] >= 0 && (mv.registros[CC] << 1) < 0)
         jmp(mv, direccion);
 }
@@ -414,8 +352,8 @@ void impNombreOperando(Tmv mv,int ip,int tipo){
     case 1: { //registro
         printf("%s",nombreRegistros[mv.memoria[++ip]]);
         break;
-    }            
-        
+    }
+
     case 2: { //inmediato
         high = (unsigned char) mv.memoria[++ip];
         low = (unsigned char) mv.memoria[++ip];
@@ -424,7 +362,7 @@ void impNombreOperando(Tmv mv,int ip,int tipo){
         num >>= 16;
         printf("%d ",num);
     }
-    
+
     case 3: {
         //offset
         printf("[");
@@ -438,13 +376,13 @@ void impNombreOperando(Tmv mv,int ip,int tipo){
 
         if(num > 0)
             printf("+ %d",num);
-        else if(num < 0)   
+        else if(num < 0)
             printf("%d",num);
 
-        printf("]");    
+        printf("]");
         break;
     }
-        
+
     }
 }
 
@@ -466,7 +404,7 @@ void disassembler(Tmv mv){
         opc = (ins & 0x1F);
         if(opc == 0x0F){
             printf("| STOP");
-            
+
         }
         else if(opc >= 0x00 && opc <= 0x08){ // 1 operando
             top1 = (ins >> 6) & (0x03);
@@ -485,7 +423,7 @@ void disassembler(Tmv mv){
             for(j = 0; j < aux; j++){
                 printf("%02x ", (unsigned char) mv.memoria[++ip]);
             }
-            
+
 
             printf("| %s ",mnemonicos[opc]);
             impNombreOperando(mv,ipaux+top2,top1); //imprime op1
@@ -496,7 +434,7 @@ void disassembler(Tmv mv){
         else{
             printf("Operando invalido");
             opc = 0x0F;
-        }    
+        }
 
     }while ((ip <= tam) && (opc != 0x0F));
 }
