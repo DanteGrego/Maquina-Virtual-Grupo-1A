@@ -47,7 +47,7 @@ char obtenerOPC(char x)
     return x & 0x1F;
 }
 
-void leerArch(Tmv mv, char *nomArch)
+void leerArch(Tmv *mv, char *nomArch)
 {
     char x;
     int i;
@@ -66,11 +66,11 @@ void leerArch(Tmv mv, char *nomArch)
 
             cargarTablaSegmentos(mv, tamCodigo[0] + tamCodigo[1] * 256);
 
-            i = obtenerHigh(mv.tablaSegmentos[0]);
+            i = obtenerHigh(mv->tablaSegmentos[0]);
 
             while (fread(&x, sizeof(char), 1, arch) != 0)
             {
-                mv.memoria[i] = x;
+                mv->memoria[i] = x;
                 i++;
             }
         }
@@ -149,19 +149,19 @@ char *getMnemonic(int code)
     }
 }
 
-void disassembler(Tmv mv)
+void disassembler(Tmv *mv)
 {
-    int aux = obtenerHigh(mv.tablaSegmentos[0]);
+    int aux = obtenerHigh(mv->tablaSegmentos[0]);
     int i = aux;
     int j;
-    int tam = obtenerLow(mv.tablaSegmentos[0]);
+    int tam = obtenerLow(mv->tablaSegmentos[0]);
     char *nombre;
     char opc, top1, top2, ins;
 
     while (i <= tam)
     {
         printf("[%x] ", aux + i);
-        ins = mv.memoria[i];
+        ins = mv->memoria[i];
         printf("%02x ", ins);
 
         opc = (ins & 0x1F);
@@ -190,26 +190,26 @@ void disassembler(Tmv mv)
     }
 }
 
-void cargarTablaSegmentos(Tmv mv, int tamCodigo)
+void cargarTablaSegmentos(Tmv *mv, int tamCodigo)
 {
-    mv.tablaSegmentos[0] = combinarHighLow(0, tamCodigo);
-    mv.tablaSegmentos[1] = combinarHighLow(tamCodigo, TAM_MEMORIA - tamCodigo);
+    mv->tablaSegmentos[0] = combinarHighLow(0, tamCodigo);
+    mv->tablaSegmentos[1] = combinarHighLow(tamCodigo, TAM_MEMORIA - tamCodigo);
 }
 
-void inicializarRegistros(Tmv mv)
+void inicializarRegistros(Tmv *mv)
 {
-    mv.registros[CS] = 0x00000000; // 0x0000 0000
-    mv.registros[DS] = 0x00010000; // 0x0001 0000
-    mv.registros[IP] = mv.registros[CS];
+    mv->registros[CS] = 0x00000000; // 0x0000 0000
+    mv->registros[DS] = 0x00010000; // 0x0001 0000
+    mv->registros[IP] = mv->registros[CS];
 }
 
-int leerValOperando(Tmv mv, int top, int posOp)
+int leerValOperando(Tmv *mv, int top, int posOp)
 {
     int op = 0;
 
     if (top > 0)
     {
-        op = mv.memoria[posOp];
+        op = mv->memoria[posOp];
         op <<= 24;
         op >>= 24; // escopeta goes brr
 
@@ -217,17 +217,17 @@ int leerValOperando(Tmv mv, int top, int posOp)
         for (int i = 0; i < top; i++)
         {
             op <<= 8;
-            op |= mv.memoria[posOp + 1];
+            op |= mv->memoria[posOp + 1];
         }
     }
 
     return op;
 }
 
-void leerInstruccion(Tmv mv)
+void leerInstruccion(Tmv *mv)
 {
-    int posFisInstruccion = obtenerDirFisica(mv, mv.registros[IP]);
-    char instruccion = mv.memoria[posFisInstruccion];
+    int posFisInstruccion = obtenerDirFisica(mv, mv->registros[IP]);
+    char instruccion = mv->memoria[posFisInstruccion];
     char top2 = (instruccion >> 6) & 0x03;
     char top1 = (instruccion >> 4) & 0x03;
     char opc = instruccion & 0x1F;
@@ -244,10 +244,10 @@ void leerInstruccion(Tmv mv)
         top2 = valOp2 = 0; // TODO preguntar si cuando hay un solo parametro op2 tiene que ser 0 o no
     }
 
-    mv.registros[OPC] = opc;
-    mv.registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // maskeado por si era negativo, sino me tapa el top en el primer byte
-    mv.registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
-    mv.registros[IP] += 1 + top1 + top2;
+    mv->registros[OPC] = opc;
+    mv->registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // maskeado por si era negativo, sino me tapa el top en el primer byte
+    mv->registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
+    mv->registros[IP] += 1 + top1 + top2;
 }
 
 char obtengoTipoOperando(int bytes) // testeado
@@ -257,7 +257,7 @@ char obtengoTipoOperando(int bytes) // testeado
     return bytes;
 }
 
-int getValor(Tmv mv, int bytes) // sin testear/incompleto
+int getValor(Tmv *mv, int bytes) // sin testear/incompleto
 {
     int valor = 0;
     char tipoOperando = obtengoTipoOperando(bytes);
@@ -271,7 +271,7 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
     case 1:
     { // registro
         bytes &= 0x0000001F;
-        valor = mv.registros[bytes];
+        valor = mv->registros[bytes];
         break;
     }
 
@@ -294,27 +294,27 @@ int getValor(Tmv mv, int bytes) // sin testear/incompleto
 
 
 
-int obtenerDirFisica(Tmv mv, int dirLogica)
+int obtenerDirFisica(Tmv *mv, int dirLogica)
 {
     int segmento = obtenerHigh(dirLogica);
     int offset = obtenerLow(dirLogica);
 
-    int base = obtenerHigh(mv.tablaSegmentos[segmento]);
+    int base = obtenerHigh(mv->tablaSegmentos[segmento]);
     return base + offset;
 }
 
-void leerMemoria(Tmv mv, int dirLogica)
+void leerMemoria(Tmv *mv, int dirLogica)
 {
     int baseSegmento = obtenerDirFisica(mv, dirLogica);
-    int tamSegmento = obtenerLow(mv.tablaSegmentos[obtenerHigh(dirLogica)]);
+    int tamSegmento = obtenerLow(mv->tablaSegmentos[obtenerHigh(dirLogica)]);
 
-    mv.registros[LAR] = dirLogica;
+    mv->registros[LAR] = dirLogica;
     int offsetFisico = obtenerDirFisica(mv, LAR);
 
     if (offsetFisico >= baseSegmento && offsetFisico < baseSegmento + tamSegmento)
     {
-        mv.registros[MAR] = combinarHighLow(CANT_BYTES_A_LEER, offsetFisico);
-        mv.registros[MBR] = mv.memoria[offsetFisico];
+        mv->registros[MAR] = combinarHighLow(CANT_BYTES_A_LEER, offsetFisico);
+        mv->registros[MBR] = mv->memoria[offsetFisico];
     }
     else
     {
@@ -323,53 +323,163 @@ void leerMemoria(Tmv mv, int dirLogica)
     }
 }
 
-int obtenerDirLogica(Tmv mv, int valor)
+int obtenerDirLogica(Tmv *mv, int valor)
 {
     char codRegistro = (valor & 0x001F0000) >> 24;
     int offsetOp = valor & 0x0000FFFF;
 
-    int valRegistro = mv.registros[codRegistro];
+    int valRegistro = mv->registros[codRegistro];
 
     // la direccion logica resultante sera la direccion logica del registro + el offset del operando
     return combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
 }
 
-void actualizarCC(Tmv mv, int valor){
-    mv.registros[CC] &= 0x80000000 & (valor < 0);
-    mv.registros[CC] &= 0x40000000 & (valor == 0);
+void actualizarCC(Tmv *mv, int valor){
+    mv->registros[CC] &= 0x80000000 & (valor < 0);
+    mv->registros[CC] &= 0x40000000 & (valor == 0);
 }
 
-void jmp(Tmv mv, int direccion){
-    mv.registros[IP] = direccion;
+void JMP(Tmv *mv, int direccion){
+    mv->registros[IP] = direccion;
 }
 
-void jz(Tmv mv, int direccion){
-    if(mv.registros[CC] >= 0 && (mv.registros[CC] << 1) < 0)
-        jmp(mv, direccion);
+void JZ(Tmv *mv, int direccion){
+    if(mv->registros[CC] >= 0 && (mv->registros[CC] << 1) < 0)
+        JMP(mv, direccion);
 }
 
-void jnz(Tmv mv, int direccion){
-    if((mv.registros[CC] << 1) >= 0)
-        jmp(mv, direccion);
+void JNZ(Tmv *mv, int direccion){
+    if((mv->registros[CC] << 1) >= 0)
+        JMP(mv, direccion);
 }
 
-void jn(Tmv mv, int direccion){
-    if(mv.registros[CC] < 0 && (mv.registros[CC] << 1) >= 0)
-        jmp(mv, direccion);
+void JN(Tmv *mv, int direccion){
+    if(mv->registros[CC] < 0 && (mv->registros[CC] << 1) >= 0)
+        JMP(mv, direccion);
 }
 
-void jnn(Tmv mv, int direccion){
-    if(mv.registros[CC] >= 0)
-        jmp(mv, direccion);
+void JNN(Tmv *mv, int direccion){
+    if(mv->registros[CC] >= 0)
+        JMP(mv, direccion);
 }
 
-void jp(Tmv mv, int direccion){
-    if(mv.registros[CC] >= 0 && (mv.registros[CC] << 1) >= 0)
-        jmp(mv, direccion);
+void JP(Tmv *mv, int direccion){
+    if(mv->registros[CC] >= 0 && (mv->registros[CC] << 1) >= 0)
+        JMP(mv, direccion);
 }
 
-void jnp(Tmv mv, int direccion){
-    if(mv.registros[CC] < 0 && (mv.registros[CC] << 1) >= 0 || 
-       mv.registros[CC] >= 0 && (mv.registros[CC] << 1) < 0)
-        jmp(mv, direccion);
+void JNP(Tmv *mv, int direccion){
+    if(mv->registros[CC] < 0 && (mv->registros[CC] << 1) >= 0 || 
+       mv->registros[CC] >= 0 && (mv->registros[CC] << 1) < 0)
+        JMP(mv, direccion);
+}
+
+void CMP(Tmv *mv, int op1, int op2){
+    int valor1 = getValor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 - valor2;
+    actualizarCC(mv, valor);
+}
+
+void ADD (Tmv *mv, int op1, int op2){
+    int valor1 = getValor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 + valor2;
+    actualizarCC(mv, valor);
+    setValor(mv, op1, valor); 
+}
+
+void SUB (Tmv *mv, int op1, int op2){
+    int valor1 = getValor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 - valor2;
+    actualizarCC(mv, valor);
+    setValor(mv, op1, valor); 
+}
+
+void MUL (Tmv *mv, int op1, int op2){
+    int valor1 = getValor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 * valor2;
+    actualizarCC(mv, valor);
+    setValor(mv, op1, valor); 
+}
+void DIV (Tmv *mv, int op1, int op2){
+    int valor1 = getValor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    if(valor2 == 0){
+        printf("Error, division por 0");
+        exit(-1);
+    }
+    int cociente = valor1/valor2;
+    int resto = valor1%valor2;
+    actualizarCC(mv, cociente);
+    setValor(mv, mv->memoria[AC], resto);
+    setValor(mv, op1, cociente); 
+}
+
+void AND (Tmv *mv, int op1, int op2){
+    int valor1 = getValor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 & valor2;
+    actualizarCC(mv, valor);
+    setValor(mv, op1, valor); 
+}
+
+void OR (Tmv *mv, int op1, int op2){
+    int valor1 = getValor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 | valor2;
+    actualizarCC(mv, valor);
+    setValor(mv, op1, valor); 
+}
+
+void XOR (Tmv *mv, int op1, int op2){
+    int valor1 = getValor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 ^ valor2;
+    actualizarCC(mv, valor);
+    setValor(mv, op1, valor); 
+}
+
+void MOV (Tmv *mv, int op1, int op2){
+    int valor = getvalor(mv, op2);
+    setValor(mv, op1, valor); 
+}
+
+void SWAP (Tmv *mv, int op1, int op2){
+    int valor1 = getvalor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    setValor(mv, op1, valor2);
+    setValor(mv, op2, valor1); 
+}
+
+void SHL (Tmv *mv, int op1, int op2){
+    int valor1 = getvalor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 << valor2;
+    actualizarCC(mv, valor);
+    setValor(mv, op1, valor); 
+}
+
+void SHR (Tmv *mv, int op1, int op2){
+    int valor1 = getvalor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 >> valor2;
+    int mascara = 0;
+    for (int i = 0; i < valor2; i++){
+        mascara <<= 1;
+        mascara++;
+    }
+    valor &= mascara;
+    actualizarCC(mv, valor);
+    setValor(mv, op1, valor); 
+}
+
+void SAR (Tmv *mv, int op1, int op2){
+    int valor1 = getvalor(mv, op1);
+    int valor2 = getvalor(mv, op2);
+    int valor = valor1 >> valor2;
+    actualizarCC(mv, valor);
+    setValor(mv, op1, valor); 
 }
