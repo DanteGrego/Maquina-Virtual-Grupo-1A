@@ -24,6 +24,26 @@
 #define CS 26
 #define DS 27
 
+const char* nombreRegistros[] = {
+    [0]  = "LAR",
+    [1]  = "MAR",
+    [2]  = "MBR",
+    [3]  = "IP",
+    [4]  = "OPC",
+    [5]  = "OP1",
+    [6]  = "OP2",
+    [10] = "EAX",
+    [11] = "EBX",
+    [12] = "ECX",
+    [13] = "EDX",
+    [14] = "EEX",
+    [15] = "EFX",
+    [16] = "AC",
+    [17] = "CC",
+    [26] = "CS",
+    [27] = "DS"
+};
+
 char* mnemonicos[CANT_REGISTROS];
 
 typedef struct{
@@ -45,6 +65,8 @@ void leerMemoria(Tmv mv, int valor);
 int obtenerDirLogica(Tmv mv, int valor);
 int leerValOperando(Tmv mv, int top, int posOp);
 void leerInstruccion(Tmv mv);
+<<<<<<< HEAD
+=======
 void actualizarCC(Tmv mv, int valor);
 
 void jmp(Tmv mv, int direccion);
@@ -54,3 +76,4 @@ void JN(Tmv mv, int direccion);
 void jnn(Tmv mv, int direccion);
 void jp(Tmv mv, int direccion);
 void jnp(Tmv mv, int direccion);
+>>>>>>> fc855414c0373ab6fafbfc7579dc1eb3c5fb7bc9
