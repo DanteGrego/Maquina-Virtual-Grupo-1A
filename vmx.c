@@ -44,12 +44,10 @@ int seguirEjecutando(Tmv* mv){
     int dirFisicaIp = obtenerDirFisica(mv, mv->registros[IP]);
     dirFisicaIp -= baseCS;
     return dirFisicaIp >= 0 && dirFisicaIp <= tamCS;
-
 }
 
 int combinarHighLow(int bytesHigh, int bytesLow)
 {
-    printf("high: %d\nlow: %d\n", bytesHigh, bytesLow);
     return (bytesHigh << 16) | (bytesLow & 0x0000FFFF);
 }
 
@@ -118,8 +116,6 @@ void cargarTablaSegmentos(Tmv *mv, int tamCodigo)
 {
     mv->tablaSegmentos[0] = combinarHighLow(0, tamCodigo);
     mv->tablaSegmentos[1] = combinarHighLow(tamCodigo, TAM_MEMORIA - tamCodigo);
-    printf("tabla0: %d, %d\n", obtenerHigh(mv->tablaSegmentos[0]), obtenerLow(mv->tablaSegmentos[0]));
-    printf("tabla1: %d, %d\n", obtenerHigh(mv->tablaSegmentos[1]), obtenerLow(mv->tablaSegmentos[1]));
 }
 
 void inicializarRegistros(Tmv* mv)
@@ -150,21 +146,13 @@ int leerValOperando(Tmv *mv, int top, int posOp)
     return op;
 }
 
-void imprimirReg(char* s, int byte){
-    printf("%s: %x, %x\n", s, obtenerHigh(byte), obtenerLow(byte));
-}
-
 void leerInstruccion(Tmv* mv)
 {
     int posFisInstruccion = obtenerDirFisica(mv, mv->registros[IP]);
-    imprimirReg("IP", mv->registros[IP]);
-    printf("ip fisico: %d\n", posFisInstruccion);
     char instruccion = mv->memoria[posFisInstruccion];
-    printf("ins: %x\n", (unsigned char)instruccion);
     char top2 = (instruccion >> 6) & 0x03;
     char top1 = (instruccion >> 4) & 0x03;
     char opc = instruccion & 0x1F;
-    printf("top2: %x, top1: %x, opc: %x\n", top2, top1, opc);
 
     posFisInstruccion++; // me pongo en posicion para leer op2
     int valOp2 = leerValOperando(mv, top2, posFisInstruccion);
@@ -182,11 +170,6 @@ void leerInstruccion(Tmv* mv)
     mv->registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // maskeado por si era negativo, sino me tapa el top en el primer byte
     mv->registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
     mv->registros[IP] += 1 + top1 + top2;
-    imprimirReg("OPC", mv->registros[OPC]);
-    imprimirReg("OP1", mv->registros[OP1]);
-    imprimirReg("OP2", mv->registros[OP2]);
-    imprimirReg("IP", mv->registros[IP]);
-    printf("---\n");
 }
 
 char obtengoTipoOperando(int bytes) // sin testear
