@@ -125,6 +125,7 @@ void inicializarRegistros(Tmv *mv)
     mv->registros[IP] = mv->registros[CS];
 }
 
+
 int leerValOperando(Tmv *mv, int top, int posOp)
 {
     int op = 0;
@@ -229,7 +230,7 @@ int obtenerDirFisica(Tmv *mv, int dirLogica)
     return base + offset;
 }
 
-void leerMemoria(Tmv *mv, int dirLogica)
+void leerMemoria(Tmv* mv, int dirLogica)
 {
     int tabla = mv->tablaSegmentos[obtenerHigh(dirLogica)];
     int baseSegmento = obtenerHigh(tabla);
@@ -344,14 +345,14 @@ void JNP(Tmv *mv, int direccion){
 
 void CMP(Tmv *mv, int op1, int op2){
     int valor1 = getValor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 - valor2;
     actualizarCC(mv, valor);
 }
 
 void ADD (Tmv *mv, int op1, int op2){
     int valor1 = getValor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 + valor2;
     actualizarCC(mv, valor);
     setValor(mv, op1, valor); 
@@ -359,7 +360,7 @@ void ADD (Tmv *mv, int op1, int op2){
 
 void SUB (Tmv *mv, int op1, int op2){
     int valor1 = getValor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 - valor2;
     actualizarCC(mv, valor);
     setValor(mv, op1, valor); 
@@ -367,14 +368,14 @@ void SUB (Tmv *mv, int op1, int op2){
 
 void MUL (Tmv *mv, int op1, int op2){
     int valor1 = getValor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 * valor2;
     actualizarCC(mv, valor);
     setValor(mv, op1, valor); 
 }
 void DIV (Tmv *mv, int op1, int op2){
     int valor1 = getValor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor2 = getValor(mv, op2);
     if(valor2 == 0){
         printf("Error, division por 0");
         exit(-1);
@@ -388,7 +389,7 @@ void DIV (Tmv *mv, int op1, int op2){
 
 void AND (Tmv *mv, int op1, int op2){
     int valor1 = getValor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 & valor2;
     actualizarCC(mv, valor);
     setValor(mv, op1, valor); 
@@ -396,7 +397,7 @@ void AND (Tmv *mv, int op1, int op2){
 
 void OR (Tmv *mv, int op1, int op2){
     int valor1 = getValor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 | valor2;
     actualizarCC(mv, valor);
     setValor(mv, op1, valor); 
@@ -404,35 +405,35 @@ void OR (Tmv *mv, int op1, int op2){
 
 void XOR (Tmv *mv, int op1, int op2){
     int valor1 = getValor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 ^ valor2;
     actualizarCC(mv, valor);
     setValor(mv, op1, valor); 
 }
 
 void MOV (Tmv *mv, int op1, int op2){
-    int valor = getvalor(mv, op2);
+    int valor = getValor(mv, op2);
     setValor(mv, op1, valor); 
 }
 
 void SWAP (Tmv *mv, int op1, int op2){
-    int valor1 = getvalor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor1 = getValor(mv, op1);
+    int valor2 = getValor(mv, op2);
     setValor(mv, op1, valor2);
     setValor(mv, op2, valor1); 
 }
 
 void SHL (Tmv *mv, int op1, int op2){
-    int valor1 = getvalor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor1 = getValor(mv, op1);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 << valor2;
     actualizarCC(mv, valor);
     setValor(mv, op1, valor); 
 }
 
 void SHR (Tmv *mv, int op1, int op2){
-    int valor1 = getvalor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor1 = getValor(mv, op1);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 >> valor2;
     int mascara = 0;
     for (int i = 0; i < valor2; i++){
@@ -445,8 +446,8 @@ void SHR (Tmv *mv, int op1, int op2){
 }
 
 void SAR (Tmv *mv, int op1, int op2){
-    int valor1 = getvalor(mv, op1);
-    int valor2 = getvalor(mv, op2);
+    int valor1 = getValor(mv, op1);
+    int valor2 = getValor(mv, op2);
     int valor = valor1 >> valor2;
     actualizarCC(mv, valor);
     setValor(mv, op1, valor); 
