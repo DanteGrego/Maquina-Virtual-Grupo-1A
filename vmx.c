@@ -229,7 +229,7 @@ void inicializarRegistros(Tmv *mv)
     mv->registros[IP] = mv->registros[CS];
 }
 
-int leerValOperando(Tmv *mv, int top, int posOp)
+
 int leerValOperando(Tmv *mv, int top, int posOp)
 {
     int op = 0;
@@ -334,7 +334,7 @@ int obtenerDirFisica(Tmv *mv, int dirLogica)
     return base + offset;
 }
 
-void leerMemoria(Tmv* *mv, int dirLogica)
+void leerMemoria(Tmv* mv, int dirLogica)
 {
     int tabla = mv->tablaSegmentos[obtenerHigh(dirLogica)];
     int baseSegmento = obtenerHigh(tabla);
