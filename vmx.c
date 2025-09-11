@@ -250,6 +250,47 @@ void leerMemoria(Tmv *mv, int dirLogica)
     }
 }
 
+void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
+{
+    char tipoOperando = obtengoTipoOperando(operando);
+    switch (tipoOperando)
+    {
+    case 1:
+    { // registro
+        operando &= 0x000000FF;
+        valor = mv->registros[operando];
+        break;
+    }
+    case 3:
+    { // memoria
+        operando &= 0x00FFFFFF;
+        escribirMemoria(mv, operando, valor); 
+        break;
+    }
+    }
+}
+
+void escribirMemoria(Tmv *mv, int dirLogica, int valor){
+    int baseSegmento = obtenerDirFisica(mv, dirLogica);
+    int tamSegmento = obtenerLow(mv->tablaSegmentos[obtenerHigh(dirLogica)]);
+
+    mv->registros[MBR] = valor;
+    mv->registros[LAR] = dirLogica;
+    int offsetFisico = obtenerDirFisica(mv, LAR);
+
+
+    if (offsetFisico >= baseSegmento && offsetFisico < baseSegmento + tamSegmento)
+    {
+        mv->registros[MAR] = combinarHighLow(4, offsetFisico);
+        mv->memoria[offsetFisico] = mv->registros[MBR];
+    }
+    else
+    {
+        printf("Error: Desbordamiento de segmento\n");
+        exit(-1);
+    }
+}
+
 int obtenerDirLogica(Tmv *mv, int valor)
 {
     char codRegistro = (valor & 0x001F0000) >> 24;
