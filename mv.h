@@ -85,9 +85,9 @@ typedef struct{
 int combinarHighLow(int bytesHigh, int bytesLow); 
 int obtenerHigh(int bytes);
 int obtenerLow(int bytes);
-int obtenerDirFisica(Tmv* mv, int dirLogica);
-void leerArch(Tmv* mv, char* nomArch);
-int getValor(Tmv* mv, int bytes); //TODO
+int obtenerDirFisica(Tmv *mv, int dirLogica);
+void leerArch(Tmv *mv, char* nomArch);
+int getValor(Tmv *mv, int bytes); //TODO
 char obtengoTipoOperando(int bytes);
 void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
 void leerMemoria(Tmv* mv, int valor, int cantBytes);
