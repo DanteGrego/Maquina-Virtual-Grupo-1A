@@ -257,31 +257,35 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
     case 1:
     { // registro
         operando &= 0x000000FF;
-        valor = mv->registros[operando];
+        mv->registros[operando] = valor;
         break;
     }
     case 3:
     { // memoria
         operando &= 0x00FFFFFF;
-        escribirMemoria(mv, operando, valor); 
+        escribirMemoria(mv, operando, 4, valor); 
         break;
     }
     }
 }
 
-void escribirMemoria(Tmv *mv, int dirLogica, int valor){
-    int baseSegmento = obtenerDirFisica(mv, dirLogica);
-    int tamSegmento = obtenerLow(mv->tablaSegmentos[obtenerHigh(dirLogica)]);
+void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor){
+    int tabla = mv->tablaSegmentos[obtenerHigh(dirLogica)];
+    int baseSegmento = obtenerHigh(tabla);
+    int tamSegmento = obtenerLow(tabla);
 
-    mv->registros[MBR] = valor;
+    
     mv->registros[LAR] = dirLogica;
     int offsetFisico = obtenerDirFisica(mv, LAR);
 
-
-    if (offsetFisico >= baseSegmento && offsetFisico < baseSegmento + tamSegmento)
+    if (offsetFisico >= baseSegmento && offsetFisico + cantBytes <= baseSegmento + tamSegmento)
     {
-        mv->registros[MAR] = combinarHighLow(4, offsetFisico);
-        mv->memoria[offsetFisico] = mv->registros[MBR];
+        mv->registros[MBR] = valor;
+        mv->registros[MAR] = combinarHighLow(cantBytes, offsetFisico);
+        for(int i = cantBytes - 1; i >= 0; i++){
+            mv->memoria[offsetFisico + i] = valor & 0x000000FF;
+            valor >>= 8;//TODO verificar si esta bien el orden
+        } 
     }
     else
     {
@@ -593,7 +597,7 @@ void SYS(Tmv* mv, int operando){
     switch(operando){
         case 1:{
             for(int i = 0; i < cantCeldas; i++){
-                printf("[%x]", );
+                //printf("[%x]", );
                 leerMemoria(mv, mv->registros[EDX] + i * tamCelda, tamCelda);
                 char mascara = 0x10;
                 for(int j = 0; j < CANT_FORMATOS; j++){
@@ -602,6 +606,7 @@ void SYS(Tmv* mv, int operando){
                         mascara >>= 1;
                     }
                 }
+                printf("\n");
             }
             break;
         }
