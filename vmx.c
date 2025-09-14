@@ -349,7 +349,7 @@ void DIV (Tmv *mv, int op1, int op2){
     int cociente = valor1/valor2;
     int resto = valor1%valor2;
     actualizarCC(mv, cociente);
-    setValor(mv, mv->memoria[AC], resto);
+    setValor(mv, mv->registros[AC], resto);
     setValor(mv, op1, cociente); 
 }
 
@@ -490,13 +490,12 @@ void JNP(Tmv *mv, int direccion){
 void NOT(Tmv *mv,int op1){
     int valor1 = getValor(mv, op1);
     valor1 ^= 0xFFFFFFFF; 
-    setValor(mv,op1, valor1);
     actualizarCC(mv,valor1);
+    setValor(mv, op1, valor1);
 }
 
 void STOP(Tmv *mv){
-    setValor(mv,mv->registros[IP], -1); 
-    exit(0);
+    mv->registros[IP] = -1; 
 }
 
 void impNombreOperando(const Tmv* mv, int ip, int tipo) {
