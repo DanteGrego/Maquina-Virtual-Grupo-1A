@@ -671,9 +671,13 @@ void SYS(Tmv* mv, int operando){
         }
 }
 
-void checkRegistros(Tmv *mv){
-    for (int i=0; i<CANT_REGISTROS; i++){
+void checkRegistros(Tmv *mv) {
+    // Lista de índices que querés imprimir
+    int indices[] = {0, 1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 26, 27};
+    int cantidad = sizeof(indices) / sizeof(indices[0]);
 
-        printf("%s: %x\n",nombreRegistros[i],mv->registros[i]);
+    for (int k = 0; k < cantidad; k++) {
+        int i = indices[k];
+        printf("%s %x\n", nombreRegistros[i], mv->registros[i]);
     }
 }
