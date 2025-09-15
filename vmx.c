@@ -269,6 +269,7 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
     }
 }
 
+//fijarse si sigo dentro del segmento porque puede ser que por offset sobrecargue el segmento y no valida ese caso
 void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor){
     int tabla = mv->tablaSegmentos[obtenerHigh(dirLogica)];
     int baseSegmento = obtenerHigh(tabla);
@@ -587,34 +588,66 @@ void disassembler(const Tmv* mv) {
     }
 }
 
+//TODO probar
+void imprimirBinario(unsigned int valor){
+    printf(" 0b");
+    do{
+        printf("%d", valor & 1);
+        valor >>= 1; 
+    }while(valor != 0);
+}
+
+int leerBinario(){
+
+}
+
 void SYS(Tmv* mv, int operando){
     int valor = getValor(mv, operando);
     int formato = mv->registros[EAX];
     int cantCeldas = obtenerLow(mv->registros[ECX]);
     int tamCelda = obtenerHigh(mv->registros[ECX]);
 
-    switch(operando){
-        case 1:{
-            for(int i = 0; i < cantCeldas; i++){
-                //printf("[%x]", );
-                leerMemoria(mv, mv->registros[EDX] + i * tamCelda, tamCelda);
-                char mascara = 0x10;
-                for(int j = 0; j < CANT_FORMATOS; j++){
-                    if(formato & mascara != 0){
-                        printf(formatos[j], mv->registros[MBR]);
-                        mascara >>= 1;
+    if(tamCelda <= 4 && tamCelda > 0 && tamCelda != 3 && formato > 0)
+        switch(valor){
+            case 1:{
+                for(int i = 0; i < cantCeldas; i++){
+                    int posActual = mv->registros[EDX] + i * tamCelda;
+                    printf("[%x]:", obtenerLow(obtenerDirFisica(mv, posActual)));
+                    leerMemoria(mv, posActual, tamCelda);
+                    //TODO separar en imprimir valor
+                    if(formato & 0x10 != 0)
+                        imprimirBinario(mv->registros[MBR]);
+                    char mascara = 0x8;
+                    for(int j = 0; j < CANT_FORMATOS; j++){
+                        if(formato & mascara != 0){
+                            printf(formatos[j], mv->registros[MBR]);
+                            mascara >>= 1;
+                        }
                     }
+                    printf("\n");
                 }
-                printf("\n");
+                break;
             }
-            break;
+            case 2:{
+                if(formato % 2 == 0 || formato == 0x1)
+                    for(int i = 0; i < cantCeldas; i++){
+                        int posActual = mv->registros[EDX]  + i * tamCelda;
+                        int valorLeido;
+                        printf("[%x]:", obtenerLow(obtenerDirFisica(mv, posActual)));
+                        if(formato & 0x10 != 0)
+                            valorLeido = leerBinario();
+                        else{
+                            char mascara = 0x8;
+                            while(formato & mascara == 0)
+                                mascara >>= 1;
+                            scanf(formatos[sqrt(mascara)], &valorLeido);
+                        }
+                        escribirMemoria(mv, posActual, tamCelda, valorLeido);
+                    }
+                break;
+            }
+            default:{
+                //TODO que hace si sys tiene operando erroneo?
+            }
         }
-        case 2:{
-
-            break;
-        }
-        default:{
-            //TODO que hace si sys tiene operando erroneo?
-        }
-    }
 }

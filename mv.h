@@ -1,7 +1,7 @@
 #define TAM_MEMORIA 16384 //16 KiB en Bytes
 #define CANT_REGISTROS 32
 #define CANT_SEGMENTOS 2
-#define CANT_FORMATOS 5
+#define CANT_FORMATOS 4
 #define TAM_IDENTIFICADOR 5
 
 
@@ -73,7 +73,7 @@ const char* mnemonicos[CANT_REGISTROS] = {
     [0x1F] = "RND"
 };
 
-char* formatos[CANT_FORMATOS] = {"%d ", "%c ", "%o ", "%x ", "%b "};
+char* formatos[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"};
 
 typedef struct{
     char memoria[TAM_MEMORIA];
