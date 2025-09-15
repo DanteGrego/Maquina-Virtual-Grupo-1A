@@ -32,6 +32,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
         inicializarRegistros(&mv);
         while(seguirEjecutando(&mv)){
             leerInstruccion(&mv);
+            ejecutarInstruccion(&mv);
         }
     }
 
@@ -174,6 +175,27 @@ void leerInstruccion(Tmv *mv)
     mv->registros[IP] += 1 + top1 + top2;
 }
 
+void ejecutarInstruccion(Tmv *mv){
+    int op1, op2, opC;
+    op1 = mv->registros[OP1];
+    op2 = mv->registros[OP2];
+    opC = mv->registros[OPC];
+    if (opC >= 0x0F && opC <= 0x0F){
+        opC -= 0x0F;
+        pfuncion0Param[opC](mv);
+    }
+    else if (opC >= 0x00 && opC <= 0x08){
+        pfuncion1Param[opC](mv, mv->registros[OP1]);
+    }
+    else if (opC >= 0x10 && opC <= 0x1F){
+        opC -= 0x10;
+        pfuncion2Param[opC](mv, mv->registros[OP1], mv->registros[OP2]);
+    }
+    else {
+        printf("Codigo de operacion invalido: %d\n", opC);
+        exit(-1);
+    }
+}
 char obtengoTipoOperando(int bytes) // testeado
 {
     bytes >>= 30;
