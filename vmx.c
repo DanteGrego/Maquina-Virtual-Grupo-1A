@@ -39,14 +39,20 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 }
 
 int seguirEjecutando(Tmv* mv){
-    int tabla = mv->tablaSegmentos[obtenerHigh(mv->registros[IP])];
+    //obtengo indice de la tabla para el segmento CS
+    int tabla = mv->tablaSegmentos[obtenerHigh(mv->registros[CS])];
+    //obtengo base y tamano del CS
     int baseCS = obtenerHigh(tabla);
     int tamCS = obtenerLow(tabla);
+    //obtengo la direccion fisica de IP
     int dirFisicaIp = obtenerDirFisica(mv, mv->registros[IP]);
+    //resto para comparar mas facil
     dirFisicaIp -= baseCS;
-    return dirFisicaIp >= 0 && dirFisicaIp <= tamCS;
+    //si IP esta fuera del CS debo parar la ejecucion
+    return dirFisicaIp >= 0 && dirFisicaIp < tamCS;
 }
 
+//combina los dos bytes de uno en la alta y dos bytes del otro en la baja
 int combinarHighLow(int bytesHigh, int bytesLow)
 {
     return (bytesHigh << 16) | (bytesLow & 0x0000FFFF);
@@ -63,11 +69,6 @@ int obtenerHigh(int bytes)
 int obtenerLow(int bytes)
 {
     return bytes & 0x0000FFFF;
-}
-
-char obtenerOPC(char x)
-{
-    return x & 0x1F;
 }
 
 void leerArch(Tmv *mv, char *nomArch)
@@ -208,7 +209,7 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
     case 3:
     { // memoria
         bytes &= 0x00FFFFFF;
-        leerMemoria(mv, obtenerDirLogica(mv, bytes), 4);
+        leerMemoria(mv, obtenerDirLogica(mv, bytes), 4, mv->registros[DS]);
         valor = mv->registros[MBR];
         break;
     }
@@ -228,9 +229,9 @@ int obtenerDirFisica(Tmv *mv, int dirLogica)
     return base + offset;
 }
 
-void leerMemoria(Tmv* mv, int dirLogica, int cantBytes)
+void leerMemoria(Tmv* mv, int dirLogica, int cantBytes, int segmento)
 {
-    int tabla = mv->tablaSegmentos[obtenerHigh(dirLogica)];
+    int tabla = mv->tablaSegmentos[obtenerHigh(segmento)];
     int baseSegmento = obtenerHigh(tabla);
     int tamSegmento = obtenerLow(tabla);
 
@@ -263,18 +264,17 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
     case 3:
     { // memoria
         operando &= 0x00FFFFFF;
-        escribirMemoria(mv, operando, 4, valor); 
+        escribirMemoria(mv, operando, 4, valor, mv->registros[DS]); 
         break;
     }
     }
 }
 
-//fijarse si sigo dentro del segmento porque puede ser que por offset sobrecargue el segmento y no valida ese caso
-void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor){
-    int tabla = mv->tablaSegmentos[obtenerHigh(dirLogica)];
+
+void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor, int segmento){
+    int tabla = mv->tablaSegmentos[obtenerHigh(segmento)];
     int baseSegmento = obtenerHigh(tabla);
     int tamSegmento = obtenerLow(tabla);
-
     
     mv->registros[LAR] = dirLogica;
     int offsetFisico = obtenerDirFisica(mv, LAR);
@@ -610,7 +610,7 @@ void SYS(Tmv* mv, int operando){
                 for(int i = 0; i < cantCeldas; i++){
                     int posActual = mv->registros[EDX] + i * tamCelda;
                     printf("[%x]:", obtenerLow(obtenerDirFisica(mv, posActual)));
-                    leerMemoria(mv, posActual, tamCelda);
+                    leerMemoria(mv, posActual, tamCelda, mv->registros[DS]);
                     //TODO separar en imprimir valor
                     if(formato & 0x10 != 0)
                         imprimirBinario(mv->registros[MBR]);
@@ -639,7 +639,7 @@ void SYS(Tmv* mv, int operando){
                                 mascara >>= 1;
                             scanf(formatos[sqrt(mascara)], &valorLeido);
                         }
-                        escribirMemoria(mv, posActual, tamCelda, valorLeido);
+                        escribirMemoria(mv, posActual, tamCelda, valorLeido, mv->registros[DS]);
                     }
                 break;
             }
