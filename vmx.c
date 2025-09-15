@@ -671,8 +671,9 @@ void SYS(Tmv* mv, int operando){
         }
 }
 
-void checkRegistros(){
+void checkRegistros(Tmv *mv){
     for (int i=0; i<CANT_REGISTROS; i++){
-        printf("%s\n",nombreRegistros[i]);
+
+        printf("%s: %x\n",nombreRegistros[i],mv->registros[i]);
     }
 }
