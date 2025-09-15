@@ -82,17 +82,17 @@ typedef struct{
 }Tmv;
 
 //prototipos
-int combinarHighLow(int bytesHigh, int bytesLow); 
-int obtenerHigh(int bytes);
-int obtenerLow(int bytes);
-int obtenerDirFisica(Tmv *mv, int dirLogica);
+int  combinarHighLow(int bytesHigh, int bytesLow); 
+int  obtenerHigh(int bytes);
+int  obtenerLow(int bytes);
+int  obtenerDirFisica(Tmv *mv, int dirLogica);
 void leerArch(Tmv *mv, char* nomArch);
-int getValor(Tmv *mv, int bytes); //TODO
+int  getValor(Tmv *mv, int bytes); //TODO
 char obtengoTipoOperando(int bytes);
 void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
 void leerMemoria(Tmv* mv, int valor, int cantBytes);
-int obtenerDirLogica(Tmv* mv, int valor);
-int leerValOperando(Tmv* mv, int top, int posOp);
+int  obtenerDirLogica(Tmv* mv, int valor);
+int  leerValOperando(Tmv* mv, int top, int posOp);
 void leerInstruccion(Tmv* mv);
 void actualizarCC(Tmv* mv, int valor);
 void JMP(Tmv* mv, int direccion);
