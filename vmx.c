@@ -369,19 +369,16 @@ void SHL (Tmv *mv, int op1, int op2){
     setValor(mv, op1, valor); 
 }
 
-void SHR (Tmv *mv, int op1, int op2){
-    int valor1 = getValor(mv, op1);
-    int valor2 = getValor(mv, op2);
-    int valor = valor1 >> valor2;
-    int mascara = 0;
-    for (int i = 0; i < valor2; i++){
-        mascara <<= 1;
-        mascara++;
-    }
-    valor &= mascara;
-    actualizarCC(mv, valor);
-    setValor(mv, op1, valor); 
+void SHR(Tmv *mv, int op1, int op2) {
+    unsigned int valor1 = (unsigned int)getValor(mv, op1);
+    unsigned int valor2 = (unsigned int)getValor(mv, op2);
+
+    unsigned int resultado = valor1 >> valor2;   
+
+    actualizarCC(mv, resultado);                 
+    setValor(mv, op1, (int)resultado);           
 }
+
 
 void SAR (Tmv *mv, int op1, int op2){
     int valor1 = getValor(mv, op1);
