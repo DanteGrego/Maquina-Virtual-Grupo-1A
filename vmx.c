@@ -48,12 +48,12 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 
 void imprimirRegistros(Tmv* mv){
     for(int i = 0; i < 7; i++)
-        printf("%s: %x\n", nombreRegistros[i], mv->registros[i]);
+        printf("%s: %d (0x%x)\n", nombreRegistros[i], mv->registros[i], mv->registros[i]);
     for(int i = 10; i < 18; i++)
-        printf("%s: %x\n", nombreRegistros[i], mv->registros[i]);
+        printf("%s: %d (0x%x)\n", nombreRegistros[i], mv->registros[i], mv->registros[i]);
 
-    printf("%s: %x\n", nombreRegistros[26], mv->registros[26]);
-    printf("%s: %x\n", nombreRegistros[27], mv->registros[27]);
+    printf("%s: 0x%x\n", nombreRegistros[26], mv->registros[26]);
+    printf("%s: 0x%x\n", nombreRegistros[27], mv->registros[27]);
 }
 
 int seguirEjecutando(Tmv* mv){
@@ -166,7 +166,7 @@ int leerValMemoria(Tmv *mv, int cantBytes, int posFisica)
     //if (cantBytes > 0)
     //{
         //leo el primer byte y hago propagacion de signo
-        valor = mv->memoria[posFisica];
+        valor = (unsigned char)mv->memoria[posFisica];
         valor <<= 24;
         valor >>= 24; // escopeta goes brr
 
@@ -175,7 +175,7 @@ int leerValMemoria(Tmv *mv, int cantBytes, int posFisica)
         for (int i = 0; i < cantBytes; i++)
         {
             valor <<= 8;
-            valor |= mv->memoria[++posFisica];
+            valor |= (unsigned char)mv->memoria[++posFisica];
         }
     //}
 
@@ -192,7 +192,9 @@ void leerInstruccion(Tmv *mv)
     //obtengo operandos con mascaras y shifteos
     char top2 = (instruccion >> 6) & 0x03;
     char top1 = (instruccion >> 4) & 0x03;
+    //printf("Operandos %d %d\n",top1,top2);
     char opc = instruccion & 0x1F;
+    //printf("Instruccion %x\n",instruccion);
 
     posFisInstruccion++; // me pongo en posicion para leer op2
     int valOp2 = leerValMemoria(mv, top2, posFisInstruccion);
@@ -242,7 +244,7 @@ void ejecutarInstruccion(Tmv *mv){
 char obtengoTipoOperando(int bytes) // testeado
 {
     bytes >>= 24;
-    bytes &= 0x00000003;
+    bytes &= 3;
     return bytes;
 }
 
@@ -268,6 +270,8 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
     case 2:
     { // inmediato
         bytes &= 0x0000FFFF;
+        bytes <<= 16;
+        bytes >>= 16;
         valor = bytes;
         break;
     }
@@ -633,7 +637,7 @@ void impNombreOperando(const Tmv* mv, int ip, int tipo) {
             low  = (unsigned char) mv->memoria[ip+2];
             num  = (high << 8) | low;
             num = (num << 16) >> 16;
-            printf("%x", num);
+            printf("%d (0x%x)", num, num);
             break;
         }
         case 3: { // memoria: [registro + offset]
@@ -719,10 +723,10 @@ void disassembler(const Tmv* mv) {
 //TODO probar
 void imprimirBinario(unsigned int valor){
     printf(" 0b");
-    do{
-        printf("%d", valor & 1);
-        valor >>= 1;
-    }while(valor != 0);
+    for(int i = 0; i < 32; i++){
+        printf("%d", (valor & 0x80000000) != 0);
+        valor <<= 1;
+    }
 }
 
 void SYS(Tmv* mv, int operando){
@@ -757,13 +761,12 @@ void SYS(Tmv* mv, int operando){
                     printf("[%x]:", obtenerLow(obtenerDirFisica(mv, posActual)));
                     leerMemoria(mv, posActual, tamCelda, mv->registros[DS]);
                     //TODO separar en imprimir valor
-                    if(formato & 0x10 != 0)
+                    if((formato & 0x10) != 0)
                         imprimirBinario(mv->registros[MBR]);
                     unsigned char mascara = 0x8;
                     for(int j = 0; j < CANT_FORMATOS; j++){
-                        if((formato & mascara) != 0){
+                        if((formato & mascara) != 0)
                             printf(formatos[CANT_FORMATOS - j - 1], mv->registros[MBR]);
-                        }
                         mascara >>= 1;
                     }
                     printf("\n");
@@ -774,15 +777,4 @@ void SYS(Tmv* mv, int operando){
                 //TODO que hace si sys tiene operando erroneo?
             }
         }
-}
-
-void checkRegistros(Tmv *mv) {
-    // Lista de índices que querés imprimir
-    int indices[] = {0, 1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 26, 27};
-    int cantidad = sizeof(indices) / sizeof(indices[0]); //esto es re berreta, me encanta -ianai
-
-    for (int k = 0; k < cantidad; k++) {
-        int i = indices[k];
-        printf("%s %x\n", nombreRegistros[i], mv->registros[i]);
-    }
 }
