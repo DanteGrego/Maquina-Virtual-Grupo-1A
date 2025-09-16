@@ -242,7 +242,7 @@ void ejecutarInstruccion(Tmv *mv){
 char obtengoTipoOperando(int bytes) // testeado
 {
     bytes >>= 24;
-    bytes &= 3;
+    bytes &= 0x00000003;
     return bytes;
 }
 
@@ -774,4 +774,15 @@ void SYS(Tmv* mv, int operando){
                 //TODO que hace si sys tiene operando erroneo?
             }
         }
+}
+
+void checkRegistros(Tmv *mv) {
+    // Lista de índices que querés imprimir
+    int indices[] = {0, 1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 17, 26, 27};
+    int cantidad = sizeof(indices) / sizeof(indices[0]); //esto es re berreta, me encanta -ianai
+
+    for (int k = 0; k < cantidad; k++) {
+        int i = indices[k];
+        printf("%s %x\n", nombreRegistros[i], mv->registros[i]);
+    }
 }
