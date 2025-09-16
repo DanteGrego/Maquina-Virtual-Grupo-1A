@@ -94,10 +94,14 @@ void leerArch(Tmv *mv, char* nomArch);
 int  getValor(Tmv *mv, int bytes); //TODO
 char obtengoTipoOperando(int bytes);
 void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
-void leerMemoria(Tmv* mv, int valor, int cantBytes);
+void leerMemoria(Tmv* mv, int dirLogica, int cantBytes, int segmento);
 int  obtenerDirLogica(Tmv* mv, int valor);
 int  leerValOperando(Tmv* mv, int top, int posOp);
+void disassembler(const Tmv* mv);
+void inicializarRegistros(Tmv *mv);
 void leerInstruccion(Tmv* mv);
+void ejecutarInstruccion(Tmv *mv);
+int seguirEjecutando(Tmv* mv);
 void actualizarCC(Tmv* mv, int valor);
 //funciones 2 parametros
 void MOV(Tmv* mv, int op1, int op2);
