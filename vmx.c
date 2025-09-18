@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <time.h>
+#include <windows.h>
 #include "mv.h"
 
 // TODO una funcion que devuelva los ultimos 5 bits (para el opc)
@@ -11,7 +12,8 @@
 int main(int numeroArgumentos, char *vectorArgumentos[])
 {
     char *fileName;            // nombre del archivo.vmx
-    char imprimoDesensamblado; // condicion booleana que decide mostrar el codigo desensamblado
+    char imprimoDesensamblado = 0; // condicion booleana que decide mostrar el codigo desensamblado
+    char devMode = 0;
     Tmv mv;
     if (numeroArgumentos < 2)
     {
@@ -24,6 +26,10 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 
         if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-d") == 0)
             imprimoDesensamblado = 1;
+        if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-dev") == 0)
+            devMode = 1;
+         if (numeroArgumentos > 3 && strcmp(vectorArgumentos[3], "-dev") == 0)
+            devMode = 1;
 
         leerArch(&mv, fileName);
         if(imprimoDesensamblado)
@@ -32,42 +38,81 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
         int debugCount = 0;
         inicializarRegistros(&mv);
         while(debugCount < 1000 && seguirEjecutando(&mv)){
-            //printf("-------\n%d\nantes de leer/ejecutado:\n", debugCount);
-            //imprimirRegistros(&mv);
+            if(devMode){
+                printf("\n--------------------------------------------------\n");
+                printf("\nTabla de segmentos: \n");
+                imprimirTabla(&mv);
+                printf("\nInstruccion %d:\n\n Antes de leer: \n",debugCount);
+                imprimirRegistros(&mv);
+                printf("\n   Memoria: \n");
+                imprimirMemoria(&mv);
+            }
+
+
             leerInstruccion(&mv);
-            //printf("\nleido:\n");
-            //imprimirRegistros(&mv);
+
+            if(devMode){
+                printf("\n  Despues de leer: \n",debugCount);
+                imprimirRegistros(&mv);
+                printf("\n   Memoria: \n");
+                imprimirMemoria(&mv);
+            }
+
             ejecutarInstruccion(&mv);
+
+            if(devMode){
+                printf("\n  Despues de ejecutar: \n",debugCount);
+                imprimirRegistros(&mv);
+                printf("\n   Memoria: \n");
+                imprimirMemoria(&mv);
+                scanf("%d");
+            }
+
+
+
             debugCount++;
         }
-        //imprimirRegistros(&mv);
     }
 
     return 0;
 }
 
+void imprimirTabla(Tmv* mv){
+    for(int i = 0; i < CANT_SEGMENTOS; i++)
+        printf("[%d]: 0x%8X\n", i, (unsigned int)mv->tablaSegmentos[i]);
+}
+
+void imprimirMemoria(Tmv* mv){
+    for(int i = 0; i < mv->nMemoriaAccedida; i++)
+        printf("    [%X]: 0x%X (%d)\n", mv->memoriaAccedida[i], mv->memoria[mv->memoriaAccedida[i]], mv->memoria[mv->memoriaAccedida[i]]);
+}
+
 void imprimirRegistros(Tmv* mv){
     for(int i = 0; i < 7; i++)
-        printf("%s: %d (0x%x)\n", nombreRegistros[i], mv->registros[i], mv->registros[i]);
+        printf("    %s: 0x%X (%d)\n", nombreRegistros[i], mv->registros[i], mv->registros[i]);
     for(int i = 10; i < 18; i++)
-        printf("%s: %d (0x%x)\n", nombreRegistros[i], mv->registros[i], mv->registros[i]);
+        printf("    %s: 0x%X (%d)\n", nombreRegistros[i], mv->registros[i], mv->registros[i]);
 
-    printf("%s: 0x%x\n", nombreRegistros[26], mv->registros[26]);
-    printf("%s: 0x%x\n", nombreRegistros[27], mv->registros[27]);
+    printf("    %s: 0x%X (%d)\n", nombreRegistros[26], mv->registros[26], mv->registros[26]);
+    printf("    %s: 0x%X (%d)\n", nombreRegistros[27], mv->registros[27], mv->registros[27]);
 }
 
 int seguirEjecutando(Tmv* mv){
-    //obtengo indice de la tabla para el segmento CS
-    int tabla = mv->tablaSegmentos[obtenerHigh(mv->registros[CS])];
-    //obtengo base y tamano del CS
-    int baseCS = obtenerHigh(tabla);
-    int tamCS = obtenerLow(tabla);
-    //obtengo la direccion fisica de IP
-    int dirFisicaIp = obtenerDirFisica(mv, mv->registros[IP]);
-    //resto para comparar mas facil
-    dirFisicaIp -= baseCS;
-    //si IP esta fuera del CS debo parar la ejecucion
-    return dirFisicaIp >= 0 && dirFisicaIp < tamCS;
+    if(mv->registros[IP] < 0)
+        return 0;
+    else{
+        //obtengo indice de la tabla para el segmento CS
+        int tabla = mv->tablaSegmentos[obtenerHigh(mv->registros[CS])];
+        //obtengo base y tamano del CS
+        int baseCS = obtenerHigh(tabla);
+        int tamCS = obtenerLow(tabla);
+        //obtengo la direccion fisica de IP
+        int dirFisicaIp = obtenerDirFisica(mv, mv->registros[IP]);
+        //resto para comparar mas facil
+        dirFisicaIp -= baseCS;
+        //si IP esta fuera del CS debo parar la ejecucion
+        return dirFisicaIp >= 0 && dirFisicaIp < tamCS;
+    }
 }
 
 //combina los dos bytes de uno en la alta y dos bytes del otro en la baja
@@ -96,21 +141,21 @@ void leerArch(Tmv *mv, char *nomArch)
 {
     char x;
     int i;
-    char cabecera[5], version, tamCodigo[2];
+    unsigned char cabecera[5], version, tamCodigo[2];
     FILE *arch;
     arch = fopen(nomArch, "rb");
 
     if (arch != NULL)
     {
         //leo cabecera
-        fread(cabecera, sizeof(char), TAM_IDENTIFICADOR, arch);
+        fread(cabecera, sizeof(unsigned char), TAM_IDENTIFICADOR, arch);
 
         //me fijo si el archivo es valido por la cabecera
         if (strcmp(cabecera, "VMX25") == 0)
         {
             //leo version y tamano del codigo
-            fread(&version, sizeof(char), 1, arch);
-            fread(tamCodigo, sizeof(char), 2, arch);
+            fread(&version, sizeof(unsigned char), 1, arch);
+            fread(tamCodigo, sizeof(unsigned char), 2, arch);
 
             //cargo la tabla de segmentos
             cargarTablaSegmentos(mv, tamCodigo[1] + tamCodigo[0] * 256);
@@ -154,6 +199,16 @@ void inicializarRegistros(Tmv *mv)
     mv->registros[DS] = 0x00010000; // 0x0001 0000
     //IP arranca en CS como direccion logica
     mv->registros[IP] = mv->registros[CS];
+
+    //debug
+    mv->nMemoriaAccedida = 0;
+}
+
+int estaEnMemoriaAccedida(Tmv* mv, int pos){
+    for(int i = 0; i < mv->nMemoriaAccedida; i++)
+        if(mv->memoriaAccedida[i] == pos)
+            return 1;
+    return 0;
 }
 
 //leo valor en la memoria sin validar desbordamiento de segmento
@@ -169,6 +224,7 @@ int leerValMemoria(Tmv *mv, int cantBytes, int posFisica)
         valor = (unsigned char)mv->memoria[posFisica];
         valor <<= 24;
         valor >>= 24; // escopeta goes brr
+
 
         //leo el restante de bytes
         cantBytes--;
@@ -294,6 +350,7 @@ int obtenerDirFisica(Tmv *mv, int dirLogica)
     //obtengo los componentes de la direccion logica
     int segmento = obtenerHigh(dirLogica);
     int offset = obtenerLow(dirLogica);
+    //printf("(dir fisica): seg: %d, offset: %x\n", segmento, offset);
 
     //busco la base fisica con el segmento de la direccion
     int base = obtenerHigh(mv->tablaSegmentos[segmento]);
@@ -323,7 +380,7 @@ void leerMemoria(Tmv* mv, int dirLogica, int cantBytes, int segmento)
     }
     else
     {
-        printf("Error: Desbordamiento de segmento\n");
+        printf("Error: Desbordamiento de segmento (0x%X)\nSe intento acceder a [0x%X]", mv->registros[IP], offsetFisico);
         exit(-1);
     }
 }
@@ -361,6 +418,7 @@ void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor, int segme
     mv->registros[LAR] = dirLogica;
     //saco la direccion fisica con la logica
     int offsetFisico = obtenerDirFisica(mv, mv->registros[LAR]);
+    //printf("escribir mem: logica: %x, fis: %x, cantBytes: %d\n", dirLogica, offsetFisico, cantBytes);
 
     //valido estar dentro del segmento al que quiero acceder
     if (offsetFisico >= baseSegmento && offsetFisico + cantBytes <= baseSegmento + tamSegmento)
@@ -370,13 +428,17 @@ void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor, int segme
         mv->registros[MAR] = combinarHighLow(cantBytes, offsetFisico);
         //escribo la memoria
         for(int i = cantBytes - 1; i >= 0; i--){
+            if(!estaEnMemoriaAccedida(mv, offsetFisico + i)){
+                mv->memoriaAccedida[mv->nMemoriaAccedida] = offsetFisico + i;
+                (mv->nMemoriaAccedida)++;
+            }
             mv->memoria[offsetFisico + i] = valor & 0x000000FF;
             valor >>= 8;//TODO verificar si esta bien el orden
         }
     }
     else
     {
-        printf("Error: Desbordamiento de segmento\n");
+        printf("Error: Desbordamiento de segmento (0x%X)\nSe intento acceder a [0x%X]", mv->registros[IP], offsetFisico);
         exit(-1);
     }
 }
@@ -565,6 +627,14 @@ void RND(Tmv *mv, int op1, int op2){
     setValor(mv,op1,valor1);
 }
 
+int isN(Tmv* mv){
+    return mv->registros[CC] < 0;
+}
+
+int isZ(Tmv* mv){
+    return (mv->registros[CC] << 1) < 0;
+}
+
 //TODO llamarlo operando, no direccion
 //salto siempre a la direccion
 void JMP(Tmv *mv, int direccion){
@@ -574,38 +644,37 @@ void JMP(Tmv *mv, int direccion){
 
 //salto si esta z
 void JZ(Tmv *mv, int direccion){
-    if(mv->registros[CC] >= 0 && (mv->registros[CC] << 1) < 0)
+    if(isZ(mv) && !isN(mv))
         JMP(mv, direccion);
 }
 
 //salto si no esta zs
 void JNZ(Tmv *mv, int direccion){
-    if((mv->registros[CC] << 1) >= 0)
+    if(!isZ(mv))
         JMP(mv, direccion);
 }
 
 //salto si esta n
 void JN(Tmv *mv, int direccion){
-    if(mv->registros[CC] < 0 && (mv->registros[CC] << 1) >= 0)
+    if(isN(mv) && !isZ(mv))
         JMP(mv, direccion);
 }
 
 //salto si no esta n
 void JNN(Tmv *mv, int direccion){
-    if(mv->registros[CC] >= 0)
+    if(!isN(mv))
         JMP(mv, direccion);
 }
 
 //salto si no esta n ni z
 void JP(Tmv *mv, int direccion){
-    if(mv->registros[CC] >= 0 && (mv->registros[CC] << 1) >= 0)
+    if(!isZ(mv) && !isN(mv))
         JMP(mv, direccion);
 }
 
 //salto si esta z o esta n
 void JNP(Tmv *mv, int direccion){
-    if(mv->registros[CC] < 0 && (mv->registros[CC] << 1) >= 0 ||
-       mv->registros[CC] >= 0 && (mv->registros[CC] << 1) < 0)
+    if(!isZ(mv) && isN(mv) || isZ(mv) && !isN(mv))
         JMP(mv, direccion);
 }
 
@@ -637,7 +706,7 @@ void impNombreOperando(const Tmv* mv, int ip, int tipo) {
             low  = (unsigned char) mv->memoria[ip+2];
             num  = (high << 8) | low;
             num = (num << 16) >> 16;
-            printf("%d (0x%x)", num, num);
+            printf("%d (0x%X)", num, num);
             break;
         }
         case 3: { // memoria: [registro + offset]
@@ -676,7 +745,7 @@ void disassembler(const Tmv* mv) {
 
 
         char izq[256];
-        int len = snprintf(izq, sizeof(izq), "[%04x] %02x ", base + ip, ins);
+        int len = snprintf(izq, sizeof(izq), "[%04X] %02X ", base + ip, ins);
 
         if (opc == 0x0F) { // STOP
             int espacios = ancho_tab - len;
@@ -689,7 +758,7 @@ void disassembler(const Tmv* mv) {
             top1 = top2;
             int pos = len;
             for (int j = 0; j < top1; j++)
-                pos += snprintf(izq + pos, sizeof(izq) - pos, "%02x ", (unsigned char) mv->memoria[ip + 1 + j]);
+                pos += snprintf(izq + pos, sizeof(izq) - pos, "%02X ", (unsigned char) mv->memoria[ip + 1 + j]);
 
             int espacios = ancho_tab - pos;
             if (espacios < 1) espacios = 1;
@@ -701,7 +770,7 @@ void disassembler(const Tmv* mv) {
             int aux = top1 + top2;
             int pos = len;
             for (int j = 0; j < aux; j++)
-                pos += snprintf(izq + pos, sizeof(izq) - pos, "%02x ", (unsigned char) mv->memoria[ip + 1 + j]);
+                pos += snprintf(izq + pos, sizeof(izq) - pos, "%02X ", (unsigned char) mv->memoria[ip + 1 + j]);
 
             int spaces = ancho_tab - pos;
             if (spaces < 1) spaces = 1;
@@ -721,12 +790,29 @@ void disassembler(const Tmv* mv) {
 }
 
 //TODO probar
-void imprimirBinario(unsigned int valor){
+void imprimirBinario(unsigned int valor, int tamCelda){
     printf(" 0b");
-    for(int i = 0; i < 32; i++){
-        printf("%d", (valor & 0x80000000) != 0);
+    int mascara = 0x80 << ((tamCelda - 1) * 8);
+    for(int i = 0; i < tamCelda * 8; i++){
+        printf("%d", (valor & mascara) != 0);
         valor <<= 1;
     }
+}
+
+int leerBinario(){
+    char* cadLeida;
+    int retorno = 0;
+
+    scanf("%s", cadLeida);
+
+    int i = 0;
+    while(cadLeida[i] == '0' || cadLeida[i] == '1'){
+        retorno <<= 1;
+        retorno |= (int)cadLeida[i] - 48;
+        i++;
+    }
+
+    return retorno;
 }
 
 void SYS(Tmv* mv, int operando){
@@ -740,17 +826,22 @@ void SYS(Tmv* mv, int operando){
             case 1:{
                 if(formato % 2 == 0 || formato == 0x1)
                     for(int i = 0; i < cantCeldas; i++){
-                        int posActual = mv->registros[EDX]  + i * tamCelda;
+                        int posActual = mv->registros[EDX] + i * tamCelda;
                         int valorLeido;
-                        printf("[%x]:", obtenerLow(obtenerDirFisica(mv, posActual)));
-                        if(formato & 0x10 != 0)
-                            scanf("%d", &valorLeido);
+                        printf("[%X]: ", obtenerLow(obtenerDirFisica(mv, posActual)));
+                        if((formato & 0x10) != 0)
+                            valorLeido = leerBinario();
                         else{
                             char mascara = 0x8;
-                            while(formato & mascara == 0)
+                            int i = CANT_FORMATOS - 1;
+                            while((formato & mascara) == 0){
                                 mascara >>= 1;
-                            scanf(formatos[(int)sqrt(mascara)], &valorLeido);
+                                i--;
+                            }
+
+                            scanf(formatosLectura[i], &valorLeido);
                         }
+
                         escribirMemoria(mv, posActual, tamCelda, valorLeido, mv->registros[DS]);
                     }
                 break;
@@ -758,15 +849,15 @@ void SYS(Tmv* mv, int operando){
             case 2:{
                 for(int i = 0; i < cantCeldas; i++){
                     int posActual = mv->registros[EDX] + i * tamCelda;
-                    printf("[%x]:", obtenerLow(obtenerDirFisica(mv, posActual)));
+                    printf("[%X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
                     leerMemoria(mv, posActual, tamCelda, mv->registros[DS]);
                     //TODO separar en imprimir valor
                     if((formato & 0x10) != 0)
-                        imprimirBinario(mv->registros[MBR]);
+                        imprimirBinario(mv->registros[MBR], tamCelda);
                     unsigned char mascara = 0x8;
                     for(int j = 0; j < CANT_FORMATOS; j++){
                         if((formato & mascara) != 0)
-                            printf(formatos[CANT_FORMATOS - j - 1], mv->registros[MBR]);
+                            printf(formatosEscritura[CANT_FORMATOS - j - 1], mv->registros[MBR]);
                         mascara >>= 1;
                     }
                     printf("\n");

@@ -77,8 +77,8 @@ const char* mnemonicos[CANT_REGISTROS] = {
     [0x1F] = "RND"
 };
 
-char* formatos[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"};
-
+char* formatosLectura[CANT_FORMATOS] = {"%d", "%c", "%o", "%x"};
+char* formatosEscritura[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"};
 typedef struct Tmv{
     char memoria[TAM_MEMORIA];
     int registros[CANT_REGISTROS];
