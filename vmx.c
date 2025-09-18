@@ -573,6 +573,18 @@ void imprimirBinario(unsigned int valor, int tamCelda){
     }
 }
 
+void imprimirCaracter(unsigned int valorLeido,int tamCelda){
+    int i;
+    char vec[4];
+    for (i = 0; i < 4; i++){
+        vec[i] = valorLeido & 0xFF;
+        valorLeido >>= 8;
+    }
+    printf(" ");
+    for (i = tamCelda-1; i>0; i--)
+        printf("%c", vec[i]);
+}
+
 int leerBinario(){
     char* cadLeida;
     int retorno = 0;
@@ -626,12 +638,17 @@ void SYS(Tmv* mv, int operando){
                     printf("[%X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
                     leerMemoria(mv, posActual, tamCelda, mv->registros[DS]);
                     //TODO separar en imprimir valor
+                    int valorLeido = mv->registros[MBR];
                     if((formato & 0x10) != 0)
-                        imprimirBinario(mv->registros[MBR], tamCelda);
+                        imprimirBinario(valorLeido, tamCelda);
                     unsigned char mascara = 0x8;
+
                     for(int j = 0; j < CANT_FORMATOS; j++){
                         if((formato & mascara) != 0)
-                            printf(formatosEscritura[CANT_FORMATOS - j - 1], mv->registros[MBR]);
+                            if (mascara == 0x02)
+                                imprimirCaracter(valorLeido, tamCelda);
+                            else
+                                printf(formatosEscritura[CANT_FORMATOS - j - 1], valorLeido);
                         mascara >>= 1;
                     }
                     printf("\n");

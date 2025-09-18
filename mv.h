@@ -2,7 +2,7 @@
 #define TAM_MEMORIA 16384 //16 KiB en Bytes
 #define CANT_REGISTROS 32
 #define CANT_SEGMENTOS 2
-#define CANT_FORMATOS 4
+#define CANT_FORMATOS 4 // byte va aparte
 #define TAM_IDENTIFICADOR 5 //del archivo, el "VMX25"
 #define CANT_FUNCIONES_0_PARAM 1
 #define CANT_FUNCIONES_1_PARAM 9
@@ -85,12 +85,12 @@ const char* mnemonicos[CANT_REGISTROS] = {
 };
 
 const char* formatosLectura[CANT_FORMATOS] = {"%d", "%c", "%o", "%x"};
-const char* formatosEscritura[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"};
+const char* formatosEscritura[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"}; //char va aparte
 
 
 //prototipos
 //cuentas con bytes
-int  combinarHighLow(int bytesHigh, int bytesLow); 
+int  combinarHighLow(int bytesHigh, int bytesLow);
 int  obtenerHigh(int bytes);
 int  obtenerLow(int bytes);
 char obtengoTipoOperando(int bytes);
@@ -162,7 +162,6 @@ int estaEnMemoriaAccedida(Tmv* mv, int pos);
 void disassembler(const Tmv* mv);
 void impNombreOperando(const Tmv* mv, int ip, int tipo);
 
-//punteros a funcion
 const void (*pfuncion0Param[CANT_FUNCIONES_0_PARAM])(Tmv *mv) = {
     [0x00] = &STOP
 };
