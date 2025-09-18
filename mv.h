@@ -27,6 +27,13 @@
 #define CS 26
 #define DS 27
 
+typedef struct Tmv{
+    char memoria[TAM_MEMORIA];
+    int memoriaAccedida[TAM_MEMORIA];//para el modo dev, guarda las posiciones de la memoria que se escribio para mostrarla
+    int nMemoriaAccedida;//cantidad de celdas accedidas
+    int registros[CANT_REGISTROS];
+    int tablaSegmentos[CANT_SEGMENTOS];
+}Tmv;
 
 const char* nombreRegistros[] = {
     [0]  = "LAR",
@@ -80,47 +87,6 @@ const char* mnemonicos[CANT_REGISTROS] = {
 const char* formatosLectura[CANT_FORMATOS] = {"%d", "%c", "%o", "%x"};
 const char* formatosEscritura[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"};
 
-const void (*pfuncion0Param[CANT_FUNCIONES_0_PARAM])(Tmv *) = {
-    [0x00] = &STOP
-};
-
-const void (*pfuncion1Param[CANT_FUNCIONES_1_PARAM])(Tmv *, int) = {
-    [0x00] = &SYS,
-    [0x01] = &JMP,
-    [0x02] = &JZ,
-    [0x03] = &JP,
-    [0x04] = &JN,
-    [0x05] = &JNZ,
-    [0x06] = &JNP,
-    [0x07] = &JNN,
-    [0x08] = &NOT
-};
-
-const void (*pfuncion2Param[CANT_FUNCIONES_2_PARAM])(Tmv *, int, int) = {
-    [0x00] = &MOV,
-    [0x01] = &ADD,
-    [0x02] = &SUB,
-    [0x03] = &MUL,
-    [0x04] = &DIV,
-    [0x05] = &CMP,
-    [0x06] = &SHL,
-    [0x07] = &SHR,
-    [0x08] = &SAR,
-    [0x09] = &AND,
-    [0x0a] = &OR,
-    [0x0b] = &XOR,
-    [0x0c] = &SWAP,
-    [0x0d] = &LDL,
-    [0x0e] = &LDH,
-    [0x0f] = &RND
-};
-typedef struct Tmv{
-    char memoria[TAM_MEMORIA];
-    int memoriaAccedida[TAM_MEMORIA];//para el modo dev, guarda las posiciones de la memoria que se escribio para mostrarla
-    int nMemoriaAccedida;//cantidad de celdas accedidas
-    int registros[CANT_REGISTROS];
-    int tablaSegmentos[CANT_SEGMENTOS];
-}Tmv;
 
 //prototipos
 //cuentas con bytes
@@ -195,3 +161,39 @@ int estaEnMemoriaAccedida(Tmv* mv, int pos);
 //funciones para dissasembler
 void disassembler(const Tmv* mv);
 void impNombreOperando(const Tmv* mv, int ip, int tipo);
+
+//punteros a funcion
+const void (*pfuncion0Param[CANT_FUNCIONES_0_PARAM])(Tmv *mv) = {
+    [0x00] = &STOP
+};
+
+const void (*pfuncion1Param[CANT_FUNCIONES_1_PARAM])(Tmv *mv, int) = {
+    [0x00] = &SYS,
+    [0x01] = &JMP,
+    [0x02] = &JZ,
+    [0x03] = &JP,
+    [0x04] = &JN,
+    [0x05] = &JNZ,
+    [0x06] = &JNP,
+    [0x07] = &JNN,
+    [0x08] = &NOT
+};
+
+const void (*pfuncion2Param[CANT_FUNCIONES_2_PARAM])(Tmv *mv, int, int) = {
+    [0x00] = &MOV,
+    [0x01] = &ADD,
+    [0x02] = &SUB,
+    [0x03] = &MUL,
+    [0x04] = &DIV,
+    [0x05] = &CMP,
+    [0x06] = &SHL,
+    [0x07] = &SHR,
+    [0x08] = &SAR,
+    [0x09] = &AND,
+    [0x0a] = &OR,
+    [0x0b] = &XOR,
+    [0x0c] = &SWAP,
+    [0x0d] = &LDL,
+    [0x0e] = &LDH,
+    [0x0f] = &RND
+};
