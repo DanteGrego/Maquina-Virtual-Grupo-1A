@@ -81,6 +81,8 @@ char* formatosLectura[CANT_FORMATOS] = {"%d", "%c", "%o", "%x"};
 char* formatosEscritura[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"};
 typedef struct Tmv{
     char memoria[TAM_MEMORIA];
+    int memoriaAccedida[TAM_MEMORIA];//para el modo dev, guarda las posiciones de la memoria que se escribio para mostrarla
+    int nMemoriaAccedida;//cantidad de celdas accedidas
     int registros[CANT_REGISTROS];
     int tablaSegmentos[CANT_SEGMENTOS];
 }Tmv;
