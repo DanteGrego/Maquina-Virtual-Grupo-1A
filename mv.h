@@ -1,12 +1,12 @@
+//tamanos y cantidades de cosas
 #define TAM_MEMORIA 16384 //16 KiB en Bytes
 #define CANT_REGISTROS 32
 #define CANT_SEGMENTOS 2
 #define CANT_FORMATOS 4
-#define TAM_IDENTIFICADOR 5
+#define TAM_IDENTIFICADOR 5 //del archivo, el "VMX25"
 #define CANT_FUNCIONES_0_PARAM 1
 #define CANT_FUNCIONES_1_PARAM 9
 #define CANT_FUNCIONES_2_PARAM 16
-
 
 //registro - codigo
 #define LAR 0
@@ -77,68 +77,13 @@ const char* mnemonicos[CANT_REGISTROS] = {
     [0x1F] = "RND"
 };
 
-char* formatosLectura[CANT_FORMATOS] = {"%d", "%c", "%o", "%x"};
-char* formatosEscritura[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"};
-typedef struct Tmv{
-    char memoria[TAM_MEMORIA];
-    int memoriaAccedida[TAM_MEMORIA];//para el modo dev, guarda las posiciones de la memoria que se escribio para mostrarla
-    int nMemoriaAccedida;//cantidad de celdas accedidas
-    int registros[CANT_REGISTROS];
-    int tablaSegmentos[CANT_SEGMENTOS];
-}Tmv;
-
-//prototipos
-int  combinarHighLow(int bytesHigh, int bytesLow); 
-int  obtenerHigh(int bytes);
-int  obtenerLow(int bytes);
-int  obtenerDirFisica(Tmv *mv, int dirLogica);
-void leerArch(Tmv *mv, char* nomArch);
-int  getValor(Tmv *mv, int bytes); //TODO
-char obtengoTipoOperando(int bytes);
-void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
-void leerMemoria(Tmv* mv, int dirLogica, int cantBytes, int segmento);
-int  obtenerDirLogica(Tmv* mv, int valor);
-int  leerValOperando(Tmv* mv, int top, int posOp);
-void disassembler(const Tmv* mv);
-void inicializarRegistros(Tmv *mv);
-void leerInstruccion(Tmv* mv);
-void ejecutarInstruccion(Tmv *mv);
-int seguirEjecutando(Tmv* mv);
-void actualizarCC(Tmv* mv, int valor);
-//funciones 2 parametros
-void MOV(Tmv* mv, int op1, int op2);
-void ADD(Tmv* mv, int op1, int op2);
-void SUB(Tmv* mv, int op1, int op2);
-void MUL(Tmv* mv, int op1, int op2);
-void DIV(Tmv* mv, int op1, int op2);
-void CMP(Tmv* mv, int op1, int op2);
-void SHL(Tmv* mv, int op1, int op2);
-void SHR(Tmv* mv, int op1, int op2);
-void SAR(Tmv* mv, int op1, int op2);
-void AND(Tmv* mv, int op1, int op2);
-void OR(Tmv* mv, int op1, int op2);
-void XOR(Tmv* mv, int op1, int op2);
-void SWAP(Tmv* mv, int op1, int op2);
-void LDL(Tmv* mv, int op1, int op2);
-void LDH(Tmv* mv, int op1, int op2);
-void RND(Tmv* mv, int op1, int op2);
-//funciones 1 parametro
-void SYS(Tmv* mv, int operando);
-void JMP(Tmv* mv, int direccion);
-void JZ(Tmv* mv, int direccion);
-void JP(Tmv* mv, int direccion);
-void JN(Tmv* mv, int direccion);
-void JNZ(Tmv* mv, int direccion);
-void JNP(Tmv* mv, int direccion);
-void JNN(Tmv* mv, int direccion);
-void NOT(Tmv* mv, int operando);
-// funciones sin parametro
-void STOP(Tmv* mv);
-
+const char* formatosLectura[CANT_FORMATOS] = {"%d", "%c", "%o", "%x"};
+const char* formatosEscritura[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"};
 
 const void (*pfuncion0Param[CANT_FUNCIONES_0_PARAM])(Tmv *) = {
     [0x00] = &STOP
 };
+
 const void (*pfuncion1Param[CANT_FUNCIONES_1_PARAM])(Tmv *, int) = {
     [0x00] = &SYS,
     [0x01] = &JMP,
@@ -150,6 +95,7 @@ const void (*pfuncion1Param[CANT_FUNCIONES_1_PARAM])(Tmv *, int) = {
     [0x07] = &JNN,
     [0x08] = &NOT
 };
+
 const void (*pfuncion2Param[CANT_FUNCIONES_2_PARAM])(Tmv *, int, int) = {
     [0x00] = &MOV,
     [0x01] = &ADD,
@@ -168,3 +114,84 @@ const void (*pfuncion2Param[CANT_FUNCIONES_2_PARAM])(Tmv *, int, int) = {
     [0x0e] = &LDH,
     [0x0f] = &RND
 };
+typedef struct Tmv{
+    char memoria[TAM_MEMORIA];
+    int memoriaAccedida[TAM_MEMORIA];//para el modo dev, guarda las posiciones de la memoria que se escribio para mostrarla
+    int nMemoriaAccedida;//cantidad de celdas accedidas
+    int registros[CANT_REGISTROS];
+    int tablaSegmentos[CANT_SEGMENTOS];
+}Tmv;
+
+//prototipos
+//cuentas con bytes
+int  combinarHighLow(int bytesHigh, int bytesLow); 
+int  obtenerHigh(int bytes);
+int  obtenerLow(int bytes);
+char obtengoTipoOperando(int bytes);
+
+//inicializacion
+void leerArch(Tmv *mv, char* nomArch);
+void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
+void inicializarRegistros(Tmv *mv);
+
+//cuentas entre direcciones
+int  obtenerDirLogica(Tmv* mv, int valor);
+int  obtenerDirFisica(Tmv *mv, int dirLogica);
+
+//lectura y ejecucion de instrucciones
+void leerInstruccion(Tmv* mv);
+int  leerValOperando(Tmv* mv, int top, int posOp);
+void ejecutarInstruccion(Tmv *mv);
+int seguirEjecutando(Tmv* mv);
+int  getValor(Tmv *mv, int bytes);
+void setValor(Tmv *mv, int operando, int valor);
+//manipulacion de memoria
+void leerMemoria(Tmv* mv, int dirLogica, int cantBytes, int segmento);
+int leerValMemoria(Tmv *mv, int cantBytes, int posFisica);
+void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor, int segmento);
+
+//funciones para las operaciones
+void actualizarCC(Tmv* mv, int valor);
+int isN(Tmv* mv);
+int isZ(Tmv* mv);
+void imprimirBinario(unsigned int valor, int tamCelda);
+int leerBinario();
+//operaciones 2 parametros
+void MOV(Tmv* mv, int op1, int op2);
+void ADD(Tmv* mv, int op1, int op2);
+void SUB(Tmv* mv, int op1, int op2);
+void MUL(Tmv* mv, int op1, int op2);
+void DIV(Tmv* mv, int op1, int op2);
+void CMP(Tmv* mv, int op1, int op2);
+void SHL(Tmv* mv, int op1, int op2);
+void SHR(Tmv* mv, int op1, int op2);
+void SAR(Tmv* mv, int op1, int op2);
+void AND(Tmv* mv, int op1, int op2);
+void OR(Tmv* mv, int op1, int op2);
+void XOR(Tmv* mv, int op1, int op2);
+void SWAP(Tmv* mv, int op1, int op2);
+void LDL(Tmv* mv, int op1, int op2);
+void LDH(Tmv* mv, int op1, int op2);
+void RND(Tmv* mv, int op1, int op2);
+//operaciones 1 parametro
+void SYS(Tmv* mv, int operando);
+void JMP(Tmv* mv, int operando);
+void JZ(Tmv* mv, int operando);
+void JP(Tmv* mv, int operando);
+void JN(Tmv* mv, int operando);
+void JNZ(Tmv* mv, int operando);
+void JNP(Tmv* mv, int operando);
+void JNN(Tmv* mv, int operando);
+void NOT(Tmv* mv, int operando);
+//operaciones sin parametro
+void STOP(Tmv* mv);
+
+//funciones para modo dev
+void imprimirTabla(Tmv* mv);
+void imprimirMemoria(Tmv* mv);
+void imprimirRegistros(Tmv* mv);
+int estaEnMemoriaAccedida(Tmv* mv, int pos);
+
+//funciones para dissasembler
+void disassembler(const Tmv* mv);
+void impNombreOperando(const Tmv* mv, int ip, int tipo);
