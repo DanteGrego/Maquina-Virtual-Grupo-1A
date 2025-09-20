@@ -15,26 +15,50 @@ void actualizarCC(Tmv *mv, int valor){
 }
 
 
-//TODO probar
-void imprimirBinario(unsigned int valor, int tamCelda){
+
+void imprimirBinario(unsigned int valorLeido, int tamCelda){
+    printf("valor: %08x \n",valorLeido);
     printf(" 0b");
-    int mascara = 0x80 << ((tamCelda - 1) * 8);
-    for(int i = 0; i < tamCelda * 8; i++){
-        printf("%d", (valor & mascara) != 0);
-        valor <<= 1;
+    unsigned int mascara = 0x80000000; 
+    valorLeido <<= ((4 - tamCelda) * 8);
+    if (valorLeido == 0)
+        printf("0");
+    else{
+        int i = 0;
+        while ((valorLeido & mascara) == 0){ // me posiciono en el primer 1
+            valorLeido <<= 1; 
+            i++;
+        }
+        while (i < tamCelda * 8){
+            printf("%d", (valorLeido & mascara) != 0);
+            valorLeido <<= 1; 
+            i++;
+        }
     }
+}
+
+void imprimirHexadecimal(unsigned int valorLeido, int tamCelda){
+    printf(" 0x%x", valorLeido);
+}
+
+void imprimirOctal(unsigned int valorLeido, int tamCelda){
+    printf(" 0o%o", valorLeido);
 }
 
 void imprimirCaracter(unsigned int valorLeido,int tamCelda){
     int i;
-    char vec[4];
+    char vecCaracteres[4];
     for (i = 0; i < 4; i++){
-        vec[i] = valorLeido & 0xFF;
+        vecCaracteres[i] = (char)(valorLeido & 0xFF);
         valorLeido >>= 8;
     }
     printf(" ");
     for (i = tamCelda-1; i>0; i--)
-        printf("%c", vec[i]);
+        printf("%c", vecCaracteres[i]);
+}
+
+void imprimirDecimal(unsigned int valorLeido, int tamCelda){
+    printf(" %d", valorLeido);
 }
 
 int leerBinario(){
@@ -54,24 +78,24 @@ int leerBinario(){
 }
 
 void SYS(Tmv* mv, int operando){
-    int valor = getValor(mv, operando);
+    int valor = getValor(mv, operando); // valor decide que funcion del sistema se quiere utilizar   1. escritura   2. lectura
     int formato = mv->registros[EAX];
     int cantCeldas = obtenerLow(mv->registros[ECX]);
     int tamCelda = obtenerHigh(mv->registros[ECX]);
 
     if(tamCelda <= 4 && tamCelda > 0 && tamCelda != 3 && formato > 0)
         switch(valor){
-            case 1:{
+            case 1:{ // lectura
                 if(formato % 2 == 0 || formato == 0x1)
                     for(int i = 0; i < cantCeldas; i++){
                         int posActual = mv->registros[EDX] + i * tamCelda;
                         int valorLeido;
-                        printf("[%X]: ", obtenerLow(obtenerDirFisica(mv, posActual)));
+                        printf("[%04X]: ", obtenerLow(obtenerDirFisica(mv, posActual)));
                         if((formato & 0x10) != 0)
                             valorLeido = leerBinario();
                         else{
                             char mascara = 0x8;
-                            int j = CANT_FORMATOS - 1;
+                            int j = CANT_FORMATOS - 2;
                             while((formato & mascara) == 0){
                                 mascara >>= 1;
                                 j--;
@@ -86,23 +110,16 @@ void SYS(Tmv* mv, int operando){
                     }
                 break;
             }
-            case 2:{
+            case 2:{ // escritura
                 for(int i = 0; i < cantCeldas; i++){
                     int posActual = mv->registros[EDX] + i * tamCelda;
-                    printf("[%X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
-                    leerMemoria(mv, posActual, tamCelda, mv->registros[DS]);
-                    //TODO separar en imprimir valor
-                    int valorLeido = mv->registros[MBR];
-                    if((formato & 0x10) != 0)
-                        imprimirBinario(valorLeido, tamCelda);
-                    unsigned char mascara = 0x8;
-
+                    printf("[%04X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
+                    leerMemoria(mv, posActual, tamCelda, mv->registros[DS]); //cargo MBR
+                    int valorLeido = mv->registros[MBR]; //saco el valor leido del mbr y lo almaceno en una variable
+                    unsigned char mascara = 0x10;
                     for(int j = 0; j < CANT_FORMATOS; j++){
                         if((formato & mascara) != 0)
-                            if (mascara == 0x02)
-                                imprimirCaracter(valorLeido, tamCelda);
-                            else
-                                printf(formatosEscritura[CANT_FORMATOS - j - 1], valorLeido);
+                            pfuncionImpresion[j](valorLeido, tamCelda); //imprimo en el orden 0b 0x 0o 0c 0d con sus respectivas funciones
                         mascara >>= 1;
                     }
                     printf("\n");

@@ -12,7 +12,7 @@
 #define TAM_MEMORIA 16384 //16 KiB en Bytes
 #define CANT_REGISTROS 32
 #define CANT_SEGMENTOS 2
-#define CANT_FORMATOS 4 // byte va aparte
+#define CANT_FORMATOS 5 // 0b, 0x, 0o 0c 0d
 #define TAM_IDENTIFICADOR 5 //del archivo, el "VMX25"
 #define CANT_FUNCIONES_0_PARAM 1
 #define CANT_FUNCIONES_1_PARAM 9
@@ -81,7 +81,11 @@ void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor, int segme
 void actualizarCC(Tmv* mv, int valor);
 int isN(Tmv* mv);
 int isZ(Tmv* mv);
-void imprimirBinario(unsigned int valor, int tamCelda);
+void imprimirBinario(unsigned int valorLeido, int tamCelda);
+void imprimirHexadecimal(unsigned int valorLeido, int tamCelda);
+void imprimirOctal(unsigned int valorLeido, int tamCelda);
+void imprimirCaracter(unsigned int valorLeido,int tamCelda);
+void imprimirDecimal(unsigned int valorLeido, int tamCelda);
 int leerBinario();
 //operaciones 2 parametros
 void MOV(Tmv* mv, int op1, int op2);
@@ -123,6 +127,7 @@ int estaEnMemoriaAccedida(Tmv* mv, int pos);
 void disassembler(const Tmv* mv);
 void impNombreOperando(const Tmv* mv, int ip, int tipo);
 
+extern const void (*pfuncionImpresion[])(unsigned int, int);
 extern const void (*pfuncion0Param[])(Tmv *mv);
 extern const void (*pfuncion1Param[])(Tmv *mv, int);
 extern const void (*pfuncion2Param[])(Tmv *mv, int, int);

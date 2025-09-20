@@ -48,9 +48,17 @@ const char* mnemonicos[CANT_REGISTROS] = {
     [0x1E] = "LDH",
     [0x1F] = "RND"
 };
+// en desuso
+const char* formatosLectura[CANT_FORMATOS - 1] = {"%d", "%c", "%o", "%x"};
+const char* formatosEscritura[CANT_FORMATOS - 1] = {" %d", " %c", " 0o%o", " 0x%x"}; //char va aparte
 
-const char* formatosLectura[CANT_FORMATOS] = {"%d", "%c", "%o", "%x"};
-const char* formatosEscritura[CANT_FORMATOS] = {" %d", " %c", " 0o%o", " 0x%x"}; //char va aparte
+const void (*pfuncionImpresion[CANT_FORMATOS])(unsigned int, int) = {
+    [0] = &imprimirBinario,
+    [1] = &imprimirHexadecimal,
+    [2] = &imprimirOctal,
+    [3] = &imprimirCaracter,
+    [4] = &imprimirDecimal
+};
 
 const void (*pfuncion0Param[CANT_FUNCIONES_0_PARAM])(Tmv *mv) = {
     [0x00] = &STOP
