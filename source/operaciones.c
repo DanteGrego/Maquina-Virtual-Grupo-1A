@@ -17,7 +17,6 @@ void actualizarCC(Tmv *mv, int valor){
 
 
 void imprimirBinario(unsigned int valorLeido, int tamCelda){
-    printf("valor: %08x \n",valorLeido);
     printf(" 0b");
     unsigned int mascara = 0x80000000; 
     valorLeido <<= ((4 - tamCelda) * 8);
@@ -53,7 +52,7 @@ void imprimirCaracter(unsigned int valorLeido,int tamCelda){
         valorLeido >>= 8;
     }
     printf(" ");
-    for (i = tamCelda-1; i>0; i--)
+    for (i = tamCelda-1; i>=0; i--)
         printf("%c", vecCaracteres[i]);
 }
 

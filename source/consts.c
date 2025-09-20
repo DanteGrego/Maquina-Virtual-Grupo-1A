@@ -49,7 +49,7 @@ const char* mnemonicos[CANT_REGISTROS] = {
     [0x1F] = "RND"
 };
 // en desuso
-const char* formatosLectura[CANT_FORMATOS - 1] = {"%d", "%c", "%o", "%x"};
+const char* formatosLectura[CANT_FORMATOS - 1] = {" %d", " %c", " %o", " %x"};
 const char* formatosEscritura[CANT_FORMATOS - 1] = {" %d", " %c", " 0o%o", " 0x%x"}; //char va aparte
 
 const void (*pfuncionImpresion[CANT_FORMATOS])(unsigned int, int) = {

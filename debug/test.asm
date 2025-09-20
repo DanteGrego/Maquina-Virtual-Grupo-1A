@@ -1,7 +1,8 @@
+        mov eax, 2
+        ldh ecx, 1
+        ldl ecx, 4
         mov edx, ds
-        ldh ecx, 2
-        ldl ecx, 1
-        mov eax, 0x1F
-        mov [edx], 0xaabbccdd
+        sys 1
+        mov eax, 31
         sys 2
         stop
