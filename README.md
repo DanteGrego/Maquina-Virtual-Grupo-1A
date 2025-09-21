@@ -6,3 +6,7 @@ Pd: la llamamos El Bicho (alias CR7)
 - Dante Emilio Gregorini
 - Ianai Gribman
 - Santiago Martinez
+
+# Especificaciones:
+- Hecho en lenguaje C (version C17)
+- Compilado con gcc en Windows
