@@ -52,6 +52,14 @@ const char* mnemonicos[CANT_REGISTROS] = {
 const char* formatosLectura[CANT_FORMATOS - 1] = {" %d", " %c", " %o", " %x"};
 const char* formatosEscritura[CANT_FORMATOS - 1] = {" %d", " %c", " 0o%o", " 0x%x"}; //char va aparte
 
+const int (*pfuncionLectura[CANT_FORMATOS])() = {
+    [0] = &leerBinario,
+    [1] = &leerHexadecimal,
+    [2] = &leerOctal,
+    [3] = &leerCaracter,
+    [4] = &leerDecimal
+};
+
 const void (*pfuncionImpresion[CANT_FORMATOS])(unsigned int, int) = {
     [0] = &imprimirBinario,
     [1] = &imprimirHexadecimal,

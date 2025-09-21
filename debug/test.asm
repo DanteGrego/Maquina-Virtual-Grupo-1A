@@ -1,8 +1,32 @@
-        mov eax, 2
+        mov efx, 'H'
+        shl efx, 8
+        add efx, 'o'
+        shl efx, 8
+        add efx, 'l'
+        shl efx, 8
+        add efx, 'a'
+        mov edx, DS
+        mov [edx], efx
+        add edx, 4
+        mov efx, 'E'
+        shl efx, 8
+        add efx, 's'
+        shl efx, 8
+        add efx, 't'
+        shl efx, 8
+        add efx, 'o'
+        mov [edx], efx
+        add edx, 4
+        mov efx, 'A'
+        shl efx, 8
+        add efx, 'n'
+        shl efx, 8
+        add efx, 'd'
+        shl efx, 8
+        add efx, 'a'
+        mov [edx], efx
+        mov edx, DS
+        ldl ecx, 12
         ldh ecx, 1
-        ldl ecx, 4
-        mov edx, ds
-        sys 1
-        mov eax, 31
         sys 2
         stop

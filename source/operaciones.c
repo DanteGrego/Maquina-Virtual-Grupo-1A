@@ -61,10 +61,11 @@ void imprimirDecimal(unsigned int valorLeido, int tamCelda){
 }
 
 int leerBinario(){
-    char* cadLeida;
+    char cadLeida[TAM_REGISTRO + 1]; //reservo lugar, sino da error
     int retorno = 0;
 
-    scanf("%s", cadLeida);
+    scanf(" %s", cadLeida);
+    fflush(stdout);
 
     int i = 0;
     while(cadLeida[i] == '0' || cadLeida[i] == '1'){
@@ -76,6 +77,39 @@ int leerBinario(){
     return retorno;
 }
 
+int leerHexadecimal(){
+    unsigned int valor;
+    scanf(" %x", &valor);
+    return valor;
+}
+
+int leerOctal(){
+    unsigned int valor;
+    scanf(" %o", &valor);
+    return valor;
+}
+
+int leerCaracter(){
+    char valor;
+    scanf(" %c", &valor);
+    return valor;
+}
+
+int leerDecimal(){
+    unsigned int valor;
+    scanf(" %d", &valor);
+    return valor;
+}
+
+void limpiarBuffers(){
+    char c;
+    //getchar agarra un caracter del buffer de entrada, agarro todos para vaciarlo
+    while((c = getchar()) != '\n' && c != EOF){}
+    //fflush limpia el buffer de salida
+    fflush(stdout);
+}
+
+
 void SYS(Tmv* mv, int operando){
     int valor = getValor(mv, operando); // valor decide que funcion del sistema se quiere utilizar   1. escritura   2. lectura
     int formato = mv->registros[EAX];
@@ -85,34 +119,29 @@ void SYS(Tmv* mv, int operando){
     if(tamCelda <= 4 && tamCelda > 0 && tamCelda != 3 && formato > 0)
         switch(valor){
             case 1:{ // lectura
-                if(formato % 2 == 0 || formato == 0x1)
-                    for(int i = 0; i < cantCeldas; i++){
-                        int posActual = mv->registros[EDX] + i * tamCelda;
-                        int valorLeido;
-                        printf("[%04X]: ", obtenerLow(obtenerDirFisica(mv, posActual)));
-                        if((formato & 0x10) != 0)
-                            valorLeido = leerBinario();
-                        else{
-                            char mascara = 0x8;
-                            int j = CANT_FORMATOS - 2;
-                            while((formato & mascara) == 0){
-                                mascara >>= 1;
-                                j--;
-                            }
-
-                            scanf(formatosLectura[j], &valorLeido);
-                            fflush(stdout);
+                for(int i = 0; i < cantCeldas; i++){
+                    int posActual = mv->registros[EDX] + i * tamCelda;
+                    int valorLeido, leido = 0, j = 0;
+                    printf("[%04X]: ", obtenerLow(obtenerDirFisica(mv, posActual)));
+                    char mascara = 0x10;
+                    while(!leido && j < CANT_FORMATOS){
+                        if((formato & mascara) != 0){
+                            valorLeido = pfuncionLectura[j]();
+                            limpiarBuffers();
+                            leido = 1;//una vez lee sale del ciclo y agarra el primer valor leido => se lee en el formato mas grande que hay
                         }
-
-
-                        escribirMemoria(mv, posActual, tamCelda, valorLeido, mv->registros[DS]);
+                        mascara >>= 1;
+                        j++;
                     }
+
+                    escribirMemoria(mv, posActual, tamCelda, valorLeido, mv->registros[DS]);
+                }
                 break;
             }
             case 2:{ // escritura
                 for(int i = 0; i < cantCeldas; i++){
                     int posActual = mv->registros[EDX] + i * tamCelda;
-                    printf("[%04X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
+                    printf("[%04X]: ", obtenerLow(obtenerDirFisica(mv, posActual)));
                     leerMemoria(mv, posActual, tamCelda, mv->registros[DS]); //cargo MBR
                     int valorLeido = mv->registros[MBR]; //saco el valor leido del mbr y lo almaceno en una variable
                     unsigned char mascara = 0x10;
