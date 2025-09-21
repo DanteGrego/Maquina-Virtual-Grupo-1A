@@ -130,8 +130,8 @@ void imprimirRegistros(Tmv* mv);
 int estaEnMemoriaAccedida(Tmv* mv, int pos);
 
 //funciones para dissasembler
-void disassembler(const Tmv* mv);
-void impNombreOperando(const Tmv* mv, int ip, int tipo);
+void disassembler(Tmv* mv);
+void impNombreOperando(Tmv* mv, int ip, int tipo);
 
 extern const int (*pfuncionLectura[])();
 extern const void (*pfuncionImpresion[])(unsigned int, int);
