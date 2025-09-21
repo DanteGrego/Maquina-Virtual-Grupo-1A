@@ -159,8 +159,8 @@ void imprimirRegistros(Tmv* mv);
 int estaEnMemoriaAccedida(Tmv* mv, int pos);
 
 //funciones para dissasembler
-void disassembler(const Tmv* mv);
-void impNombreOperando(const Tmv* mv, int ip, int tipo);
+void disassembler(Tmv* mv);
+void impNombreOperando(Tmv* mv, int ip, int tipo);
 
 const void (*pfuncion0Param[CANT_FUNCIONES_0_PARAM])(Tmv *mv) = {
     [0x00] = &STOP
