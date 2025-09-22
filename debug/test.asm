@@ -1,32 +1,15 @@
-        mov efx, 'H'
-        shl efx, 8
-        add efx, 'o'
-        shl efx, 8
-        add efx, 'l'
-        shl efx, 8
-        add efx, 'a'
+        mov ebx, CS
+        add ebx, 11
+        mov efx, 10
+        mov eax, 1
         mov edx, DS
         mov [edx], efx
-        add edx, 4
-        mov efx, 'E'
-        shl efx, 8
-        add efx, 's'
-        shl efx, 8
-        add efx, 't'
-        shl efx, 8
-        add efx, 'o'
-        mov [edx], efx
-        add edx, 4
-        mov efx, 'A'
-        shl efx, 8
-        add efx, 'n'
-        shl efx, 8
-        add efx, 'd'
-        shl efx, 8
-        add efx, 'a'
-        mov [edx], efx
-        mov edx, DS
-        ldl ecx, 12
-        ldh ecx, 1
+        ldl ecx, 1
+        ldh ecx, 4
         sys 2
-        stop
+        sub efx, 1
+        cmp efx, 0
+        jz fin
+        mov ip, ebx
+
+fin:    stop

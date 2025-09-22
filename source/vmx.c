@@ -17,10 +17,10 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 
         if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-d") == 0)
             imprimoDesensamblado = 1;
-        if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-dev") == 0)
-            devMode = 1;
-         if (numeroArgumentos > 3 && strcmp(vectorArgumentos[3], "-dev") == 0)
-            devMode = 1;
+        //if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-dev") == 0)
+        //    devMode = 1;
+        //if (numeroArgumentos > 3 && strcmp(vectorArgumentos[3], "-dev") == 0)
+        //    devMode = 1;
 
         leerArch(&mv, fileName);
         if(imprimoDesensamblado)
@@ -361,7 +361,6 @@ int obtenerDirLogica(Tmv *mv, int valor)
 
     //obtengo el registro con su codigo
     int valRegistro = mv->registros[codRegistro];
-
 
     // la direccion logica resultante sera la direccion logica del registro + el offset del operando
     return valRegistro + offsetOp;
