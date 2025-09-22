@@ -362,8 +362,9 @@ int obtenerDirLogica(Tmv *mv, int valor)
     //obtengo el registro con su codigo
     int valRegistro = mv->registros[codRegistro];
 
+
     // la direccion logica resultante sera la direccion logica del registro + el offset del operando
-    return combinarHighLow(obtenerHigh(valRegistro), obtenerLow(valRegistro) + offsetOp);
+    return valRegistro + offsetOp;
 }
 
 //como getValor, setea el valor segun que sea
