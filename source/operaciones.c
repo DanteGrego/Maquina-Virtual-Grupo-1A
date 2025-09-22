@@ -141,7 +141,7 @@ void SYS(Tmv* mv, int operando){
             case 2:{ // escritura
                 for(int i = 0; i < cantCeldas; i++){
                     int posActual = mv->registros[EDX] + i * tamCelda;
-                    printf("[%04X]: ", obtenerLow(obtenerDirFisica(mv, posActual)));
+                    printf("[%04X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
                     leerMemoria(mv, posActual, tamCelda, mv->registros[DS]); //cargo MBR
                     int valorLeido = mv->registros[MBR]; //saco el valor leido del mbr y lo almaceno en una variable
                     unsigned char mascara = 0x10;

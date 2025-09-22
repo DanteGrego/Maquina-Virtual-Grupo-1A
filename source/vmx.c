@@ -59,8 +59,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                 scanf("%d");
             }
 
-
-
             debugCount++;
         }
     }
