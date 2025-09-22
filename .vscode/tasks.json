@@ -45,13 +45,13 @@
 				"echo": true,
 				"reveal": "always",
 				"focus": true,
-				"panel": "shared",
-				//"clear": true
+				"panel": "shared"
 			},
 			"dependsOn": [
 				"Ejecutar vmt.exe"
 			],
-			"dependsOrder": "sequence"
+			"dependsOrder": "sequence",
+			"problemMatcher": []
 		},
 		{
 			"label": "Ejecutar debug vmx.exe",
@@ -67,8 +67,7 @@
 				"echo": true,
 				"reveal": "always",
 				"focus": true,
-				"panel": "shared",
-				//"clear": true
+				"panel": "shared"
 			},
 			"dependsOn": [
 				"Ejecutar vmt.exe"
