@@ -37,7 +37,7 @@
 			"type": "shell",
 			"command": "${workspaceFolder}/debug/vmx.exe",
 			"args": [
-				"${workspaceFolder}/debug/test.vmx",
+				"${workspaceFolder}/debug/sample.vmx",
 				"-d"
 			],
 			"group": "test",
@@ -58,7 +58,7 @@
 			"type": "shell",
 			"command": "${workspaceFolder}/debug/vmx.exe",
 			"args": [
-				"${workspaceFolder}/debug/test.vmx",
+				"${workspaceFolder}/debug/sample.vmx",
 				"-d",
 				"-dev"
 			],

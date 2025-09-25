@@ -48,7 +48,10 @@ void imprimirCaracter(unsigned int valorLeido,int tamCelda){
     int i;
     char vecCaracteres[4];
     for (i = 0; i < 4; i++){
-        vecCaracteres[i] = (char)(valorLeido & 0xFF);
+        unsigned char c = valorLeido & 0xFF;
+        if(c < 32 || c > 126)
+            c = '.';
+        vecCaracteres[i] = c;
         valorLeido >>= 8;
     }
     printf(" ");

@@ -68,8 +68,7 @@ void disassembler(Tmv* mv) {
             int espacios = ancho_tab - largo;
             if (espacios < 1) espacios = 1;
             printf("%s%*s| STOP\n", izq, espacios, "");
-            ip += tam;
-
+            ip += 1;
         } else if (opc <= 0x08) { // 1 operando
             // swap
             top1 = top2;
