@@ -59,6 +59,11 @@ void DIV (Tmv *mv, int op1, int op2){
     }
     int cociente = valor1/valor2;
     int resto = valor1%valor2;
+    if(valor1 < 0 && valor2 > 0){
+        cociente--;
+        resto = valor1 - valor2*cociente;
+    }
+
     actualizarCC(mv, cociente);
     mv->registros[AC] = resto;
     setValor(mv, op1, cociente);
