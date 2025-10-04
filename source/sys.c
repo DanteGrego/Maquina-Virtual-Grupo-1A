@@ -96,6 +96,42 @@ void limpiarBuffers(){
     fflush(stdout);
 }
 
+void sysLeer(Tmv* mv, int cantCeldas, int tamCelda, int formato){
+    for(int i = 0; i < cantCeldas; i++){
+        int posActual = mv->registros[EDX] + i * tamCelda;
+        int valorLeido, leido = 0, j = 0;
+        printf("[%04X]: ", obtenerLow(obtenerDirFisica(mv, posActual)));
+        char mascara = 0x10;
+        while(!leido && j < CANT_FORMATOS){
+            if((formato & mascara) != 0){
+                valorLeido = pfuncionLectura[j]();
+                limpiarBuffers();
+                leido = 1;//una vez lee sale del ciclo y agarra el primer valor leido => se lee en el formato mas grande que hay
+            }
+            mascara >>= 1;
+            j++;
+        }
+
+        escribirMemoria(mv, posActual, tamCelda, valorLeido, mv->registros[DS]);
+    }
+}
+
+void sysEscribir(Tmv* mv, int cantCeldas, int tamCelda, int formato){
+    for(int i = 0; i < cantCeldas; i++){
+        int posActual = mv->registros[EDX] + i * tamCelda;
+        printf("[%04X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
+        leerMemoria(mv, posActual, tamCelda, mv->registros[DS]); //cargo MBR
+        int valorLeido = mv->registros[MBR]; //saco el valor leido del mbr y lo almaceno en una variable
+        unsigned char mascara = 0x10;
+        for(int j = 0; j < CANT_FORMATOS; j++){
+            if((formato & mascara) != 0)
+                pfuncionImpresion[j](valorLeido, tamCelda); //imprimo en el orden 0b 0x 0o 0c 0d con sus respectivas funciones
+            mascara >>= 1;
+        }
+        printf("\n");
+    }
+}
+
 
 void SYS(Tmv* mv, int operando){
     int valor = getValor(mv, operando); // valor decide que funcion del sistema se quiere utilizar   1. escritura   2. lectura
@@ -106,39 +142,11 @@ void SYS(Tmv* mv, int operando){
     if(tamCelda <= 4 && tamCelda > 0 && tamCelda != 3 && formato > 0)
         switch(valor){
             case 1:{ // lectura
-                for(int i = 0; i < cantCeldas; i++){
-                    int posActual = mv->registros[EDX] + i * tamCelda;
-                    int valorLeido, leido = 0, j = 0;
-                    printf("[%04X]: ", obtenerLow(obtenerDirFisica(mv, posActual)));
-                    char mascara = 0x10;
-                    while(!leido && j < CANT_FORMATOS){
-                        if((formato & mascara) != 0){
-                            valorLeido = pfuncionLectura[j]();
-                            limpiarBuffers();
-                            leido = 1;//una vez lee sale del ciclo y agarra el primer valor leido => se lee en el formato mas grande que hay
-                        }
-                        mascara >>= 1;
-                        j++;
-                    }
-
-                    escribirMemoria(mv, posActual, tamCelda, valorLeido, mv->registros[DS]);
-                }
+                sysLeer(mv, cantCeldas, tamCelda, formato);
                 break;
             }
             case 2:{ // escritura
-                for(int i = 0; i < cantCeldas; i++){
-                    int posActual = mv->registros[EDX] + i * tamCelda;
-                    printf("[%04X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
-                    leerMemoria(mv, posActual, tamCelda, mv->registros[DS]); //cargo MBR
-                    int valorLeido = mv->registros[MBR]; //saco el valor leido del mbr y lo almaceno en una variable
-                    unsigned char mascara = 0x10;
-                    for(int j = 0; j < CANT_FORMATOS; j++){
-                        if((formato & mascara) != 0)
-                            pfuncionImpresion[j](valorLeido, tamCelda); //imprimo en el orden 0b 0x 0o 0c 0d con sus respectivas funciones
-                        mascara >>= 1;
-                    }
-                    printf("\n");
-                }
+                sysEscribir(mv, cantCeldas, tamCelda, formato);
                 break;
             }
             default:{

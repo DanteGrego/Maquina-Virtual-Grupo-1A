@@ -67,7 +67,7 @@ int obtenerDirFisica(Tmv *mv, int dirLogica)
     }
 }
 
-//leo valor en la memoria sin validar desbordamiento de segmento
+//leo valor en la memoria sin validar desbordamiento de segmento (usada por leerMemoria)
 int leerValMemoria(Tmv *mv, int cantBytes, int posFisica)
 {
     //valor leido
@@ -94,7 +94,7 @@ int leerValMemoria(Tmv *mv, int cantBytes, int posFisica)
     return valor;
 }
 
-//leo de la memoria actualizando LAR, MAR y MBR
+//leo de la memoria actualizando LAR, MAR y MBR (valida desbordamiento)
 void leerMemoria(Tmv* mv, int dirLogica, int cantBytes, int segmento)
 {
     //busco las posiciones fisicas del segmento al que quiero acceder

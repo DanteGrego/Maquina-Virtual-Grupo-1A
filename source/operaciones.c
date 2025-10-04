@@ -59,7 +59,8 @@ void DIV (Tmv *mv, int op1, int op2){
     }
     int cociente = valor1/valor2;
     int resto = valor1%valor2;
-    if(valor1 < 0 && valor2 > 0){
+    //quiza estaba bien, el lunes se sabra...
+    if(resto < 0){
         cociente--;
         resto = valor1 - valor2*cociente;
     }
@@ -184,7 +185,6 @@ int isZ(Tmv* mv){
     return (mv->registros[CC] << 1) < 0;
 }
 
-//TODO llamarlo operando, no direccion
 //salto siempre a la direccion
 void JMP(Tmv *mv, int direccion){
     int valor = getValor(mv, direccion);

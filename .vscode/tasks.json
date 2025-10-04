@@ -15,6 +15,7 @@
 				"gettersetter.c",
 				"sys.c",
 				"debugpropio.c",
+				"inicializacion.c",
 				"-o",
 				"${workspaceFolder}/debug/vmx.exe"
 			],
