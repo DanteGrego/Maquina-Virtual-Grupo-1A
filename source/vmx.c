@@ -26,10 +26,9 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
         
     
             
-        leerArch(&mv, fileNameVmx);
-        if(imprimoDesensamblado)
-            disassembler(&mv);
+        leerArch(&mv, fileName);
 
+        
         inicializarRegistros(&mv);
         while(seguirEjecutando(&mv)){
 

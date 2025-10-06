@@ -40,8 +40,7 @@
 
 typedef struct Tmv{
     char memoria[TAM_MEMORIA];
-    int memoriaAccedida[TAM_MEMORIA];//para el modo dev, guarda las posiciones de la memoria que se escribio para mostrarla
-    int nMemoriaAccedida;//cantidad de celdas accedidas
+    char *fileNameVmi, *fileNameVmx;
     int registros[CANT_REGISTROS];
     int tablaSegmentos[CANT_SEGMENTOS];
 }Tmv;
@@ -50,6 +49,7 @@ extern const char* nombreRegistros[];
 extern const char* mnemonicos[];
 extern const char* formatosLectura[];
 extern const char* formatosEscritura[];
+
 
 //prototipos
 //cuentas con bytes
