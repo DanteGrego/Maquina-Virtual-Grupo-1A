@@ -158,6 +158,36 @@ void SYS(Tmv* mv, int operando){
         }
 }
 
+void generarArchivoImagen(Tmv* mv){
+    FILE* arch;
+
+    arch = fopen(mv->fileNameVmi, "wb");
+    if(arch == NULL){
+        printf("No se pudo abrir el archivo .vmi");//(debug)
+    }else{
+        //header
+        char* identificador = "VMI25";
+        fwrite(identificador, 5, 1, arch);
+        char version = 1;
+        fwrite(&version, 1, 1, arch);
+        fwrite(&mv->tamMemoria, 2, 1, arch);
+
+        //registros
+        fwrite(mv->registros, 4, CANT_REGISTROS, arch);
+
+        //tabla segmentos
+        fwrite(mv->tablaSegmentos, 4, CANT_SEGMENTOS, arch);
+
+        //memoria
+        fwrite(mv->memoria, 1, mv->tamMemoria, arch);
+
+        fclose(arch);
+    }
+}
+
 void sysBreakpoint(Tmv* mv){
-    
+    if(mv->fileNameVmi != NULL){
+        generarArchivoImagen(mv);
+        mv->modoDebug = 1;
+    }
 }

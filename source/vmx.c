@@ -5,6 +5,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 {
     char *fileName;            // nombre del archivo.vmx
     char imprimoDesensamblado = 0; // condicion booleana que decide mostrar el codigo desensamblado
+    char ingresoDebug;
     Tmv mv;
     if (numeroArgumentos < 2)
     {
@@ -20,12 +21,28 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     
             
         leerArch(&mv, fileName);
-
-        
         inicializarRegistros(&mv);
+        mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         while(seguirEjecutando(&mv)){
             leerInstruccion(&mv);
             ejecutarInstruccion(&mv);
+            if(mv.modoDebug){
+                scanf("%c", &ingresoDebug);
+                switch(ingresoDebug){
+                    case 'g':{
+                        mv.modoDebug = 0;//sigue con la ejecucion hasta el proximo breakpoint o hasta terminar
+                        break;
+                    }
+                    case 'q':{
+                        exit(0);//termina la ejecucion
+                        break;
+                    }
+                    default:{
+                        sysBreakpoint(&mv);//sigue ejecucion paso a paso con un breakpoint en cada uno
+                        break;
+                    }
+                }
+            }
         }
     }
 

@@ -14,9 +14,6 @@ void inicializarRegistros(Tmv *mv)
     mv->registros[DS] = 0x00010000; // 0x0001 0000
     //IP arranca en CS como direccion logica
     mv->registros[IP] = mv->registros[CS];
-
-    //debug
-    mv->nMemoriaAccedida = 0;
 }
 
 //carga al CS el codigo del archivo
