@@ -5,7 +5,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 {
     char *fileName;            // nombre del archivo.vmx
     char imprimoDesensamblado = 0; // condicion booleana que decide mostrar el codigo desensamblado
-    char devMode = 0;
     Tmv mv;
     if (numeroArgumentos < 2)
     {
@@ -18,51 +17,15 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 
         if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-d") == 0)
             imprimoDesensamblado = 1;
-        
-        if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-dev") == 0)
-            devMode = 1;
-        if (numeroArgumentos > 3 && strcmp(vectorArgumentos[3], "-dev") == 0)
-            devMode = 1;
     
             
         leerArch(&mv, fileName);
-        if(imprimoDesensamblado)
-            disassembler(&mv);
 
-        int debugCount = 0;
+        
         inicializarRegistros(&mv);
-        while(debugCount < 1000 && seguirEjecutando(&mv)){
-            if(devMode){
-                printf("\n--------------------------------------------------\n");
-                printf("\nTabla de segmentos: \n");
-                imprimirTabla(&mv);
-                printf("\nInstruccion %d:\n\n Antes de leer: \n",debugCount);
-                imprimirRegistros(&mv);
-                printf("\n   Memoria: \n");
-                imprimirMemoria(&mv);
-            }
-
-
+        while(seguirEjecutando(&mv)){
             leerInstruccion(&mv);
-
-            if(devMode){
-                printf("\n  Despues de leer: \n",debugCount);
-                imprimirRegistros(&mv);
-                printf("\n   Memoria: \n");
-                imprimirMemoria(&mv);
-            }
-
             ejecutarInstruccion(&mv);
-
-            if(devMode){
-                printf("\n  Despues de ejecutar: \n",debugCount);
-                imprimirRegistros(&mv);
-                printf("\n   Memoria: \n");
-                imprimirMemoria(&mv);
-                scanf("%d");
-            }
-
-            debugCount++;
         }
     }
 

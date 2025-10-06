@@ -149,8 +149,15 @@ void SYS(Tmv* mv, int operando){
                 sysEscribir(mv, cantCeldas, tamCelda, formato);
                 break;
             }
+            case 0xF:{
+                sysBreakpoint(mv);
+            }
             default:{
                 //TODO que hace si sys tiene operando erroneo?
             }
         }
+}
+
+void sysBreakpoint(Tmv* mv){
+    
 }
