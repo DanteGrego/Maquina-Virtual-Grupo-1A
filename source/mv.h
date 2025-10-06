@@ -37,6 +37,10 @@
 #define CC 17
 #define CS 26
 #define DS 27
+#define ES 28
+#define SS 29
+#define KS 30
+#define PS 31
 
 typedef struct Tmv{
     char memoria[TAM_MEMORIA];
