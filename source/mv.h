@@ -39,8 +39,9 @@
 #define DS 27
 
 typedef struct Tmv{
-    char memoria[TAM_MEMORIA];
+    char *memoria;  // previamente memoria[TAM_MEMORIA];
     char *fileNameVmi, *fileNameVmx;
+    int tamMemoria; // se inicializa en el main
     int registros[CANT_REGISTROS];
     int tablaSegmentos[CANT_SEGMENTOS];
 }Tmv;

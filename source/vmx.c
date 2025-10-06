@@ -5,9 +5,9 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 {
     Tmv mv;
     mv.fileNameVmx = NULL;              // nombre del archivo.vmx
-    mv.fileNaveVmi = NULL;              // nombre del archivo.vmy 
+    mv.fileNameVmi = NULL;              // nombre del archivo.vmy 
+    mv.tamMemoria = TAM_MEMORIA;        // se inicializa en 16Kib
            
-    char *extencionArchivo;
     char imprimoDesensamblado = 0; // condicion booleana que decide mostrar el codigo desensamblado
 
 
@@ -18,11 +18,50 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     }
     else
     {
-        
-        fileNameVmx = vectorArgumentos[1];
+        int i = 1;
+        char* argumentoActual;
+        char *extensionArchivo;
+        while (i < numeroArgumentos && strcmp(vectorArgumentos[i],"-p") != 0){
+            strcpy(argumentoActual,vectorArgumentos[i]);
+            strcpy(extensionArchivo,getExtension(argumentoActual));
+            if (strcmp(extensionArchivo,".vmx"))
+                strcpy(mv.fileNameVmx,argumentoActual);
+            else if (strcmp(extensionArchivo,".vmi"))
+                strcpy(mv.fileNameVmi,argumentoActual);
+            else if (argumentoActual[0] == 'm' && argumentoActual[1] == '=')
+                cargoTamMemoria(&mv, argumentoActual); // aca se carga mv.tamMemoria, si nunca entra ya se inicializo en 16Kib
+            else if (argumentoActual[0] == '-' && argumentoActual[1] == 'd')
+                imprimoDesensamblado = 1;
+            i++;
+        }
 
-        if (numeroArgumentos > 2 && strcmp(vectorArgumentos[2], "-d") == 0)
-            imprimoDesensamblado = 1;
+        if (mv.fileNameVmi == NULL && mv.fileNameVmx == NULL){
+            printf("ERROR, no se especificaron archivos para la ejecucion");
+            exit(-1);
+        }
+        else
+        if (mv.fileNameVmx != NULL){
+             // si hay vmx ->
+            mv.memoria = (char *) malloc(mv.tamMemoria);
+
+            // inicializar registros
+            inicializarRegistros(&mv);
+
+            // inicializar la tabla
+            inicializarTabla(&mv);
+
+
+            // cargo parametros al ps
+        }{
+             // si no hay vmx ->
+             // copio directo del vmi
+        }
+
+
+       
+       
+
+        
         
     
             
@@ -39,6 +78,14 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     }
 
     return 0;
+}
+//obtiene la extension de una cadena, de no tener extension devuelve un string vacio
+char * getExtension(char * cadena){
+    int i = 0;
+    while (cadena[i] != "\0" && cadena[i] != '.')
+        i++;
+    return cadena + i;
+
 }
 
 //combina los dos bytes de uno en la alta y dos bytes del otro en la baja
