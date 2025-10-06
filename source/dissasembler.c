@@ -8,8 +8,19 @@ void impNombreOperando(Tmv* mv, int ip, int tipo) {
 
     switch (tipo) {
         case 1: { // registro
-            // saco el registro con el código que tiene en memoria
-            snprintf(nombre, sizeof(nombre), "%s", nombreRegistros[mv->memoria[ip + 1]]);
+            // encuentro el sector de registros y lo imprimo segun corresponda
+            char sec = ((unsigned char)(mv->memoria [ip+1]) >> 6); 
+            char reg = mv->memoria [ip+1];
+            if(sec == 0)
+                printf("%s",nombreRegistros[reg]);
+            else if(sec == 1)
+                printf("%cL",nombreRegistros[reg][1]);
+            else if(sec == 2)
+                printf("%cH",nombreRegistros[reg][1]);
+            else if(sec == 3)
+                printf("%cX",nombreRegistros[reg][1]);
+            else
+                printf("REGISTRO INVALIDO");
             break;
         }
         case 2: { // inmediato (2 bytes)
@@ -23,6 +34,16 @@ void impNombreOperando(Tmv* mv, int ip, int tipo) {
         }
         case 3: { // memoria: [registro + offset]
             // imprimo registro como caso 1 y calculo offset
+            char tamCelda = ((unsigned char)(mv->memoria [ip+1]) >> 6); 
+
+            if(tamCelda == 0)
+                printf("l");
+            else if (tamCelda == 2)
+                printf("w");
+            else if (tamCelda == 3)
+                printf("b");
+
+            //hay que modificar
             high = (unsigned char)mv->memoria[ip + 2];
             low  = (unsigned char)mv->memoria[ip + 3];
             num  = (high << 8) | low;
@@ -49,10 +70,15 @@ void impNombreOperando(Tmv* mv, int ip, int tipo) {
 void disassembler(Tmv* mv) {
     int base = obtenerHigh(mv->tablaSegmentos[0]); // base seg código
     int tam  = obtenerLow(mv->tablaSegmentos[0]);  // tamaño seg código
-    int ip   = 0;
+    int entryPoint = IP;
+    int ip = 0;
+    
 
     // ancho de la línea completa antes de la barra
     const int ancho_tab = 32;
+
+    //imprime K segment si existe
+
 
     while (ip < tam) {
         unsigned char ins  = mv->memoria[ip];
@@ -62,14 +88,25 @@ void disassembler(Tmv* mv) {
         unsigned char top1 = (ins >> 4) & 0x03;
 
         char izq[256];
+
+        if (ip == entryPoint)
+            printf(">");
+        else
+            printf(" ");
+
+
         int largo = snprintf(izq, sizeof(izq), "[%04X] %02X ", base + ip, ins);
 
-        if (opc == 0x0F) { // STOP
+        if (opc == 0x0F || opc == 0x0E) { // STOP o RET
             int espacios = ancho_tab - largo;
             if (espacios < 1) espacios = 1;
-            printf("%s%*s| STOP\n", izq, espacios, "");
+
+            if (opc == 0x0F)
+                printf("%s%*s| STOP\n", izq, espacios, "");
+            else
+                printf("%s%*s| RET\n", izq, espacios, "");
             ip += 1;
-        } else if (opc <= 0x08) { // 1 operando
+        } else if (opc <= 0x08 || (opc >= 0x0B && opc <= 0x0D)) { // 1 operando
             // swap
             top1 = top2;
             int pos = largo;
