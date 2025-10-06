@@ -37,13 +37,19 @@
 #define CC 17
 #define CS 26
 #define DS 27
+#define ES 28
+#define SS 29
+#define KS 30
+#define PS 31
 
 typedef struct Tmv{
     char *memoria;  // previamente memoria[TAM_MEMORIA];
     char *fileNameVmi, *fileNameVmx;
     int tamMemoria; // se inicializa en el main
     int registros[CANT_REGISTROS];
+    int tamMemoria;
     int tablaSegmentos[CANT_SEGMENTOS];
+    char modoDebug;//0: normal, '1': debug
 }Tmv;
 
 extern const char* nombreRegistros[];
@@ -94,6 +100,8 @@ int leerHexadecimal();
 int leerOctal();
 int leerCaracter();
 int leerDecimal();
+void sysBreakpoint(Tmv* mv);
+
 //operaciones 2 parametros
 void MOV(Tmv* mv, int op1, int op2);
 void ADD(Tmv* mv, int op1, int op2);
@@ -123,12 +131,6 @@ void JNN(Tmv* mv, int operando);
 void NOT(Tmv* mv, int operando);
 //operaciones sin parametro
 void STOP(Tmv* mv);
-
-//funciones para modo dev
-void imprimirTabla(Tmv* mv);
-void imprimirMemoria(Tmv* mv);
-void imprimirRegistros(Tmv* mv);
-int estaEnMemoriaAccedida(Tmv* mv, int pos);
 
 //funciones para dissasembler
 void disassembler(Tmv* mv);
