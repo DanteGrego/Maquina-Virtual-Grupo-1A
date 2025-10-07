@@ -27,6 +27,8 @@
 #define OPC 4
 #define OP1 5
 #define OP2 6
+#define SP 7
+#define BP 8
 #define EAX 10
 #define EBX 11
 #define ECX 12
@@ -66,9 +68,8 @@ int  obtenerLow(int bytes);
 char obtengoTipoOperando(int bytes);
 
 //inicializacion
-void leerArch(Tmv *mv, char* nomArch);
-void cargarTablaSegmentos(Tmv* mv, int tamCodigo);
-void inicializarRegistros(Tmv *mv);
+void leerArchivoVmx(Tmv *mv, int tamPS);
+void inicializarTablaRegistros(Tmv* mv, int tamPS);
 
 //cuentas entre direcciones
 int  obtenerDirLogica(Tmv* mv, int valor);

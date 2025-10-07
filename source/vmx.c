@@ -57,15 +57,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
              // copio directo del vmi
         }
 
-
-       
-       
-
-        
-        
-    
-            
-        leerArch(&mv, fileName);
         inicializarRegistros(&mv);
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         while(seguirEjecutando(&mv)){
