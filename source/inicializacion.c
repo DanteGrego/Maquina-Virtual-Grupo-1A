@@ -108,6 +108,7 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
 
 void cargarTodoMv(Tmv* mv, FILE* arch){
     fread(&mv->tamMemoria, 2, 1, arch);
+    mv->memoria = (char*) malloc(mv->tamMemoria);
     fread(mv->registros, 4, 32, arch);
     fread(mv->tablaSegmentos, 4, 8, arch);
     fread(mv->memoria, 1, mv->tamMemoria, arch);
