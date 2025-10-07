@@ -36,28 +36,41 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
         }
 
         if (mv.fileNameVmi == NULL && mv.fileNameVmx == NULL){
-            printf("ERROR, no se especificaron archivos para la ejecucion");
+            printf("ERROR: no se especificaron archivos para la ejecucion");
             exit(-1);
         }
         else
-        if (mv.fileNameVmx != NULL){
-             // si hay vmx ->
-            mv.memoria = (char *) malloc(mv.tamMemoria);
+            if (mv.fileNameVmx != NULL){
+                // si hay vmx ->
+                mv.memoria = (char *) malloc(mv.tamMemoria);
+                int tamPS = 0;
+                while (i < numeroArgumentos){
+                    int j = 0;
+                    do{
+                        if (tamPS >= mv.tamMemoria){
+                            printf("Excedido tamanio de memoria");
+                            exit(-1);
+                        }
+                        mv.memoria[tamPS] = vectorArgumentos[i][j];
+                        tamPS++;
+                    } while (vectorArgumentos[i][j++] != '\0');
+                    i++;
+                }
+                leerArchVmx(&mv,tamPS);
+            }
+            else{
+                // si no hay vmx ->
+                // copio directo del vmi
+            }
 
-            // inicializar registros
-            inicializarRegistros(&mv);
 
-            // inicializar la tabla
-            inicializarTabla(&mv);
+       
+       
 
-
-            // cargo parametros al ps
-        }{
-             // si no hay vmx ->
-             // copio directo del vmi
-        }
-
-        inicializarRegistros(&mv);
+        
+        
+    
+            
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         while(seguirEjecutando(&mv)){
 
