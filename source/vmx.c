@@ -40,8 +40,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             exit(-1);
         }
         else
-            if (mv.fileNameVmx != NULL){
-                // si hay vmx ->
+            if (mv.fileNameVmx != NULL){    // si hay vmx ->
                 mv.memoria = (char *) malloc(mv.tamMemoria);
                 int tamPS = 0;
                 while (i < numeroArgumentos){
@@ -64,12 +63,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             }
 
 
-       
-       
-
-        
-        
-    
             
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         while(seguirEjecutando(&mv)){
@@ -99,12 +92,14 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     return 0;
 }
 //obtiene la extension de una cadena, de no tener extension devuelve un string vacio
-char * getExtension(char * cadena){
-    int i = 0;
-    while (cadena[i] != "\0" && cadena[i] != '.')
-        i++;
-    return cadena + i;
+char *getExtension(char *cadena) {
+    char *ultimoPunto = strrchr(cadena, '.'); // busca el último punto
 
+    if (ultimoPunto == NULL || *(ultimoPunto + 1) == '\0') {
+        return ""; // no hay extensión o el punto está al final
+    }
+
+    return ultimoPunto; // devuelve la parte después del punto con el punto
 }
 
 //combina los dos bytes de uno en la alta y dos bytes del otro en la baja
