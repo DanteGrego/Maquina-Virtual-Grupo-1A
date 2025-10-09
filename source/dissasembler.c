@@ -1,5 +1,41 @@
 #include "mv.h"
 
+
+void impKS(Tmv* mv){
+    if(mv->registros[KS] != -1){
+        int base = obtenerHigh(mv->tablaSegmentos[CS]); // base seg K
+        int tam  = obtenerLow(mv->tablaSegmentos[CS]);  // tamaño seg K
+        int i = base;
+        char* cadena;
+        int n;
+        char car;
+        
+        while (i < base + tam){
+            
+            printf("[%04X]",base + i);
+            n = 0;
+            while(mv->memoria[i] != '\0' && n < 7){
+                car = mv->memoria[i];
+                printf(" %02X",car);
+
+                if(car < 32 || car > 126)
+                    cadena[n] = '.';
+                else
+                    cadena[n] = car;
+
+                n++;
+                i++;
+            }
+            if(n >= 6){
+                cadena[6] = '.';
+                cadena[7] = '.';
+            }
+
+            printf("   | \"%s\" ",cadena);
+        }
+    }
+}
+
 // disassembler: imprime el operando
 void impNombreOperando(Tmv* mv, int ip, int tipo) {
     const int ancho = 18;           // ancho fijo de la columna del operando
