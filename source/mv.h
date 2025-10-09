@@ -69,7 +69,7 @@ char obtengoTipoOperando(int bytes);
 
 //inicializacion
 void leerArchivoVmx(Tmv *mv, int tamPS);
-void inicializarTablaRegistros(Tmv* mv, int tamPS);
+void leerArchivoVmi(Tmv* mv);
 
 //cuentas entre direcciones
 int  obtenerDirLogica(Tmv* mv, int valor);

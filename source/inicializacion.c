@@ -105,3 +105,53 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
         exit(-1);
     }
 }
+
+void cargarTodoMv(Tmv* mv, FILE* arch){
+    fread(&mv->tamMemoria, 2, 1, arch);
+    mv->memoria = (char*) malloc(mv->tamMemoria);
+    fread(mv->registros, 4, 32, arch);
+    fread(mv->tablaSegmentos, 4, 8, arch);
+    fread(mv->memoria, 1, mv->tamMemoria, arch);
+}
+
+
+void leerArchivoVmi(Tmv* mv){
+    unsigned char cabecera[5], version;
+    FILE *arch;
+    arch = fopen(mv->fileNameVmx, "rb");
+
+    if (arch != NULL)
+    {
+        //leo cabecera
+        fread(cabecera, sizeof(unsigned char), TAM_IDENTIFICADOR, arch);
+
+        //me fijo si el archivo es valido por la cabecera
+        if (strcmp(cabecera, "VMI25") == 0)
+        {
+            //leo version y tamano del codigo
+            fread(&version, sizeof(unsigned char), 1, arch);
+            switch(version){
+                case 1:{
+                    cargarTodoMv(mv, arch);
+                }
+                default:{
+                    printf("Version invalida");
+                    exit(-1);
+                    break;
+                }
+            }
+            
+            fclose(arch);
+        }
+        else{
+            printf("Error: El archivo no es valido\n");
+            fclose(arch);
+            exit(-1);
+        }
+    }
+    else
+    {
+        printf("Error: El archivo no pudo abrirse\n");
+        exit(-1);
+    }
+}

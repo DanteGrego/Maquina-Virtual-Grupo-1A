@@ -55,11 +55,10 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     } while (vectorArgumentos[i][j++] != '\0');
                     i++;
                 }
-                leerArchVmx(&mv,tamPS);
+                leerArchivoVmx(&mv,tamPS);
             }
             else{
-                // si no hay vmx ->
-                // copio directo del vmi
+                leerArchivoVmi(&mv);
             }
 
 
