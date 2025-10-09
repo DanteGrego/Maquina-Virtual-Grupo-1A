@@ -2,36 +2,55 @@
 
 
 void impKS(Tmv* mv){
-    if(mv->registros[KS] != -1){
-        int base = obtenerHigh(mv->tablaSegmentos[CS]); // base seg K
-        int tam  = obtenerLow(mv->tablaSegmentos[CS]);  // tamaño seg K
+    if (mv->registros[KS] != -1){
+        int base = obtenerHigh(mv->tablaSegmentos[CS]); 
+        int tam  = obtenerLow (mv->tablaSegmentos[CS]);
         int i = base;
-        char* cadena;
-        int n;
-        char car;
-        
-        while (i < base + tam){
-            
-            printf("[%04X]",base + i);
-            n = 0;
-            while(mv->memoria[i] != '\0' && n < 7){
-                car = mv->memoria[i];
-                printf(" %02X",car);
 
-                if(car < 32 || car > 126)
+        const int ancho_tab = 32; // mismo ancho que disassembler
+
+        while (i < base + tam){
+            int dir = base + i;
+            int n = 0;
+            char cadena[9];  // 6 caracteres + ".." + '\0'
+            unsigned char car;
+
+            // ---- parte izquierda: dirección ----
+            printf(" [%04X] ", dir);
+
+            while (mv->memoria[i] != '\0' && n < 7){
+                car = (unsigned char)mv->memoria[i];
+                printf("%02X ", car);
+
+                if (car < 32 || car > 126)
                     cadena[n] = '.';
                 else
-                    cadena[n] = car;
+                    cadena[n] = (char)car;
 
                 n++;
                 i++;
             }
-            if(n >= 6){
+
+            // ---- truncado si excede ----
+            if (n >= 6){
                 cadena[6] = '.';
                 cadena[7] = '.';
+                cadena[8] = '\0';
+            } else {
+                cadena[n] = '\0';
             }
 
-            printf("   | \"%s\" ",cadena);
+            // ---- cálculo de alineación ----
+            // 8 caracteres por byte (2 hex + espacio aprox) + dirección (7) ≈ 32 ancho total
+            int espacios = ancho_tab - (7 + (n * 3));
+            if (espacios < 1) espacios = 1;
+
+            // ---- parte derecha alineada ----
+            for (int k = 0; k < espacios; k++) printf(" ");
+            printf("| \"%s\"\n", cadena);
+
+            // ---- saltar '\0' si terminó ----
+            if (mv->memoria[i] == '\0') i++;
         }
     }
 }
