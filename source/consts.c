@@ -48,10 +48,11 @@ const char* mnemonicos[CANT_REGISTROS] = {
     [0x1E] = "LDH",
     [0x1F] = "RND"
 };
+/*
 // en desuso
 const char* formatosLectura[CANT_FORMATOS - 1] = {" %d", " %c", " %o", " %x"};
 const char* formatosEscritura[CANT_FORMATOS - 1] = {" %d", " %c", " 0o%o", " 0x%x"}; //char va aparte
-
+*/
 const int (*pfuncionLectura[CANT_FORMATOS])() = {
     [0] = &leerBinario,
     [1] = &leerHexadecimal,

@@ -43,7 +43,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             if (mv.fileNameVmx != NULL){    // si hay vmx ->
                 mv.memoria = (char *) malloc(mv.tamMemoria);
                 int tamPS = 0;
-                while (i < numeroArgumentos){
+                while (i < numeroArgumentos){ // cargo los parametros en el param segment y obtengo su tamaño
                     int j = 0;
                     do{
                         if (tamPS >= mv.tamMemoria){

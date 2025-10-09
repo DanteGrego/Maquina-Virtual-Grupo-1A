@@ -22,8 +22,33 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
 
     case 1:
     { // registro
-        bytes &= 0x0000001F;
-        valor = mv->registros[bytes];
+        char registro = bytes & 0x0000001F;
+        char tipoTamanioRegistro = (bytes >> 6) & 0b11; //obtengo el tamaño del registro a leer
+    /*   00 4 bytes
+         01 cuarto byte
+         10 tercer byte
+         11 2 bytes */
+        switch (tipoTamanioRegistro){
+            case 0b00: valor = mv->registros[registro]; break;
+            case 0b01: 
+                valor = mv->registros[registro] & 0x000000FF; 
+                valor <<= 24;
+                valor >>= 24;
+            break;
+            case 0b10: 
+                valor = (mv->registros[registro] & 0x0000FF00) >> 8; 
+                valor <<= 24;
+                valor >>= 24;
+            break;
+            case 0b11: 
+                valor = mv->registros[registro] & 0x0000FFFF; 
+                valor <<= 16;
+                valor >>= 16;
+            break;
+        }
+
+            
+        
         break;
     }
 
@@ -38,8 +63,11 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
 
     case 3:
     { // memoria
-        bytes &= 0x00FFFFFF;
-        leerMemoria(mv, obtenerDirLogica(mv, bytes), 4, mv->registros[DS]);
+        char tamMemoria = 4 - ((bytes & 0x00C00000) >> 18);
+        bytes &= 0x001FFFFF;
+        char registro = bytes >> 16;
+        //TODO CAMBIAR ACCESO A MEMORIA
+        leerMemoria(mv, obtenerDirLogica(mv, bytes), tamMemoria, mv->registros[DS]);
         valor = mv->registros[MBR];
         break;
     }
@@ -143,8 +171,31 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
     {
     case 1:
     { // registro
-        operando &= 0x000000FF;
-        mv->registros[operando] = valor;
+        char tipoTamanioRegistro = (operando >> 6) & 0b11; //obtengo el tamaño del registro a escribir
+    /*   00 4 bytes
+         01 cuarto byte
+         10 tercer byte
+         11 2 bytes */
+        char registro = operando & 0x0000001F;
+
+
+        
+        switch (tipoTamanioRegistro){
+            case 0b00: mv->registros[registro] = valor; break;
+            case 0b01: 
+                mv->registros[registro] &= 0xFFFFFF00;
+                mv->registros[registro] |= valor & 0x000000FF;
+            break;
+            case 0b10: 
+                mv->registros[registro] &= 0xFFFF00FF;
+                mv->registros[registro] |= (valor & 0x000000FF) << 8;
+            break;
+            case 0b11: 
+                mv->registros[registro] &= 0xFFFF0000;
+                mv->registros[registro] |= valor & 0x0000FFFF;
+            break;
+        }
+
         break;
     }
     case 3:
