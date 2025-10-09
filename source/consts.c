@@ -8,6 +8,8 @@ const char* nombreRegistros[] = {
     [4]  = "OPC",
     [5]  = "OP1",
     [6]  = "OP2",
+    [7] = "SP",
+    [8] = "BP",
     [10] = "EAX",
     [11] = "EBX",
     [12] = "ECX",
@@ -17,7 +19,11 @@ const char* nombreRegistros[] = {
     [16] = "AC",
     [17] = "CC",
     [26] = "CS",
-    [27] = "DS"
+    [27] = "DS",
+    [28] = "ES",
+    [29] = "SS",
+    [30] = "KS",
+    [31] = "PS"
 };
 
 const char* mnemonicos[CANT_REGISTROS] = {
@@ -82,7 +88,10 @@ const void (*pfuncion1Param[CANT_FUNCIONES_1_PARAM])(Tmv *mv, int) = {
     [0x05] = &JNZ,
     [0x06] = &JNP,
     [0x07] = &JNN,
-    [0x08] = &NOT
+    [0x08] = &NOT,
+    [0x0B] = &PUSH,
+    [0x0C] = &POP,
+    [0x0D] = &CALL
 };
 
 const void (*pfuncion2Param[CANT_FUNCIONES_2_PARAM])(Tmv *mv, int, int) = {
