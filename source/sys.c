@@ -155,6 +155,10 @@ void SYS(Tmv* mv, int operando){
                 sysStringRead(mv);
                 break;
             }
+            case 4:{
+                sysStringWrite(mv);
+                break;
+            }
             case 0xF:{
                 sysBreakpoint(mv);
                 break;
@@ -201,12 +205,36 @@ void sysBreakpoint(Tmv* mv){
 
 void sysStringRead(Tmv* mv){
     int caracteresMaximo = obtenerLow(mv->registros[ECX]);//CX
-    int posFisica = obtenerDirFisica(mv, mv->registros[EDX]);
+    int posActual = mv->registros[EDX];
     int segmento = obtenerHigh(mv->registros[EDX]);
     char* stringLeido;
 
-    printf("[%04X]:", posFisica);
-    
+    scanf("%s", stringLeido);
+
+    int i = 0;
+
+    while(stringLeido[i] != '\0' && (i < caracteresMaximo || caracteresMaximo == -1)){
+        escribirMemoria(mv, posActual + i, 1, stringLeido[i], segmento);
+        i++;
+    }
+
+    escribirMemoria(mv, posActual + i, 1, '\0', segmento);
+}
 
 
+void sysStringWrite(Tmv* mv){
+    int posActual = mv->registros[EDX];
+    int segmento = obtenerHigh(mv->registros[EDX]);
+    int i = 1;
+    char c;
+
+    leerMemoria(mv, posActual, 1, segmento);
+    c = mv->registros[MBR];
+
+    while(c != '\0'){
+        printf("%c", c);
+        leerMemoria(mv, posActual + i, 1, segmento);
+        c = mv->registros[MBR];
+        i++;
+    }
 }
