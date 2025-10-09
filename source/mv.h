@@ -15,8 +15,8 @@
 #define CANT_SEGMENTOS 2
 #define CANT_FORMATOS 5 // 0b, 0x, 0o 0c 0d
 #define TAM_IDENTIFICADOR 5 //del archivo, el "VMX25"
-#define CANT_FUNCIONES_0_PARAM 1
-#define CANT_FUNCIONES_1_PARAM 14
+#define CANT_FUNCIONES_0_PARAM 2
+#define CANT_FUNCIONES_1_PARAM 12
 #define CANT_FUNCIONES_2_PARAM 16
 
 //registro - codigo
@@ -130,13 +130,18 @@ void JNZ(Tmv* mv, int operando);
 void JNP(Tmv* mv, int operando);
 void JNN(Tmv* mv, int operando);
 void NOT(Tmv* mv, int operando);
+void PUSH(Tmv* mv, int operando);
+void POP(Tmv* mv, int operando);
+void CALL(Tmv* mv, int operando);
 //operaciones sin parametro
 void STOP(Tmv* mv);
+void RET(Tmv* mv);
 
 //funciones para dissasembler
 void disassembler(Tmv* mv);
 void impNombreOperando(Tmv* mv, int ip, int tipo);
 
+extern const int vectorTraductorIndicesCOperacion[32];
 extern const int (*pfuncionLectura[])();
 extern const void (*pfuncionImpresion[])(unsigned int, int);
 extern const void (*pfuncion0Param[])(Tmv *mv);

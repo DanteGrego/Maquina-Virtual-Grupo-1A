@@ -182,15 +182,16 @@ void ejecutarInstruccion(Tmv *mv){
     op2 = mv->registros[OP2];
     opC = mv->registros[OPC];
     //funciones de 0 parametros
-    if (opC >= 0x0F && opC <= 0x0F){
-        opC -= 0x0F;
+    if (opC >= 0x0E && opC <= 0x0F){
+        opC = vectorTraductorIndicesCOperacion[opC];
         pfuncion0Param[opC](mv);
     }//funciones de 1 parametro
     else if (opC >= 0x00 && opC <= 0x08){
+        opC = vectorTraductorIndicesCOperacion[opC];
         pfuncion1Param[opC](mv, mv->registros[OP1]);
     }//funciones de 2 parametros
     else if (opC >= 0x10 && opC <= 0x1F){
-        opC -= 0x10;
+        opC = vectorTraductorIndicesCOperacion[opC];
         pfuncion2Param[opC](mv, mv->registros[OP1], mv->registros[OP2]);
     }
     else {
