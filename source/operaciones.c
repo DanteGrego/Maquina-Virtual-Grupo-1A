@@ -248,9 +248,7 @@ void PUSH(Tmv *mv, int op){
         exit(-1);
     }
     
-    leerMemoria(mv, mv->registros[SP], 4, obtenerHigh(mv->registros[SS]));
-    int valor = mv->registros[MBR];
-    setValor(mv, op, valor);
+    escribirMemoria(mv, mv->registros[SP], 4, getValor(mv, op), obtenerHigh(mv->registros[SS]));
 }
 
 void POP(Tmv *mv, int op){
@@ -274,7 +272,7 @@ void POP(Tmv *mv, int op){
 }
 
 void CALL(Tmv *mv, int op){
-    int operando = 1 << 6;
+    int operando = 1 << 24;
     operando += IP;
 
     PUSH(mv, operando);//PUSH IP
@@ -287,7 +285,7 @@ void STOP(Tmv *mv){
 }
 
 void RET(Tmv *mv){
-    int operando = 1 << 6;
+    int operando = 1 << 24;
     operando += IP;
 
     POP(mv, operando);
