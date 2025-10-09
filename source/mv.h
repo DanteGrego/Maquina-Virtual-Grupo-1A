@@ -16,7 +16,7 @@
 #define CANT_FORMATOS 5 // 0b, 0x, 0o 0c 0d
 #define TAM_IDENTIFICADOR 5 //del archivo, el "VMX25"
 #define CANT_FUNCIONES_0_PARAM 1
-#define CANT_FUNCIONES_1_PARAM 9
+#define CANT_FUNCIONES_1_PARAM 14
 #define CANT_FUNCIONES_2_PARAM 16
 
 //registro - codigo
