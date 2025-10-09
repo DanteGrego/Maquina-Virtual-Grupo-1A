@@ -140,6 +140,7 @@ void RET(Tmv* mv);
 //funciones para dissasembler
 void disassembler(Tmv* mv);
 void impNombreOperando(Tmv* mv, int ip, int tipo);
+void impKS(Tmv* mv);
 
 extern const int vectorTraductorIndicesCOperacion[32];
 extern const int (*pfuncionLectura[])();
