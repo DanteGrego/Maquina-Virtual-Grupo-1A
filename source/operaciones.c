@@ -240,15 +240,17 @@ void PUSH(Tmv *mv, int op){
         printf("Error: no se definio tamanio para el Stack segment\n");
         exit(-1);
     }
+
     mv->registros[SP] -= 4;
-    int opStackPointer = SP << 16;
    
     if (mv->registros[SP] < mv->registros[SS]){
         printf("Error: Stack Overflow");
         exit(-1);
     }
-    int valor = getValor(mv,op);
-    setValor(mv, opStackPointer, valor);
+    
+    leerMemoria(mv, mv->registros[SP], 4, obtenerHigh(mv->registros[SS]));
+    int valor = mv->registros[MBR];
+    setValor(mv, op, valor);
 }
 
 void POP(Tmv *mv, int op){
@@ -256,25 +258,37 @@ void POP(Tmv *mv, int op){
         printf("Error: no se definio tamanio para el Stack segment\n");
         exit(-1);
     }
-    int opStackPointer = SP << 16;
-    int dirLogicaSP = obtenerDirLogica(mv,opStackPointer);
-    int dirFisicaSP = obtenerDirFisica(mv,dirLogicaSP);
-    if (dirFisicaSP+4 >= mv->tamMemoria){
+
+    int tamSegmentoS = obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[SS])]);
+    int offsetSP = obtenerLow(mv->registros[SP]);
+
+    if (offsetSP+4 >= tamSegmentoS){
         printf("Error: Stack Underflow");
         exit(-1);
     }
-    int valor = getValor(mv,opStackPointer);
+
+    leerMemoria(mv, mv->registros[SP], 4, obtenerHigh(mv->registros[SS]));
+    int valor = mv->registros[MBR];
     setValor(mv, op, valor);
     mv->registros[SP] += 4;
 }
+
 void CALL(Tmv *mv, int op){
-    
+    int operando = 1 << 6;
+    operando += IP;
+
+    PUSH(mv, operando);//PUSH IP
+    JMP(mv, op);
 }
 
 //paro el programa, mando IP fuera del CS (posicion -1)
 void STOP(Tmv *mv){
     mv->registros[IP] = -1;
 }
-void RET(Tmv *mv){
 
+void RET(Tmv *mv){
+    int operando = 1 << 6;
+    operando += IP;
+
+    POP(mv, operando);
 }
