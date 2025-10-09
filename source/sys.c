@@ -97,6 +97,7 @@ void limpiarBuffers(){
 }
 
 void sysLeer(Tmv* mv, int cantCeldas, int tamCelda, int formato){
+    int segmento = mv->registros[EDX];
     for(int i = 0; i < cantCeldas; i++){
         int posActual = mv->registros[EDX] + i * tamCelda;
         int valorLeido, leido = 0, j = 0;
@@ -112,15 +113,16 @@ void sysLeer(Tmv* mv, int cantCeldas, int tamCelda, int formato){
             j++;
         }
 
-        escribirMemoria(mv, posActual, tamCelda, valorLeido, mv->registros[DS]);
+        escribirMemoria(mv, posActual, tamCelda, valorLeido, segmento);
     }
 }
 
 void sysEscribir(Tmv* mv, int cantCeldas, int tamCelda, int formato){
+    int segmento = obtenerHigh(mv->registros[EDX]);
     for(int i = 0; i < cantCeldas; i++){
         int posActual = mv->registros[EDX] + i * tamCelda;
         printf("[%04X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
-        leerMemoria(mv, posActual, tamCelda, mv->registros[DS]); //cargo MBR
+        leerMemoria(mv, posActual, tamCelda, segmento); //cargo MBR
         int valorLeido = mv->registros[MBR]; //saco el valor leido del mbr y lo almaceno en una variable
         unsigned char mascara = 0x10;
         for(int j = 0; j < CANT_FORMATOS; j++){
@@ -149,8 +151,13 @@ void SYS(Tmv* mv, int operando){
                 sysEscribir(mv, cantCeldas, tamCelda, formato);
                 break;
             }
+            case 3:{
+                sysStringRead(mv);
+                break;
+            }
             case 0xF:{
                 sysBreakpoint(mv);
+                break;
             }
             default:{
                 //TODO que hace si sys tiene operando erroneo?
@@ -190,4 +197,16 @@ void sysBreakpoint(Tmv* mv){
         generarArchivoImagen(mv);
         mv->modoDebug = 1;
     }
+}
+
+void sysStringRead(Tmv* mv){
+    int caracteresMaximo = obtenerLow(mv->registros[ECX]);//CX
+    int posFisica = obtenerDirFisica(mv, mv->registros[EDX]);
+    int segmento = obtenerHigh(mv->registros[EDX]);
+    char* stringLeido;
+
+    printf("[%04X]:", posFisica);
+    
+
+
 }
