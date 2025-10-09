@@ -1,5 +1,13 @@
 #include "mv.h"
 
+
+void impKS(Tmv* mv){
+    if(mv->tablaSegmentos){
+
+    }
+}
+
+
 // disassembler: imprime el operando
 void impNombreOperando(Tmv* mv, int ip, int tipo) {
     const int ancho = 18;           // ancho fijo de la columna del operando
