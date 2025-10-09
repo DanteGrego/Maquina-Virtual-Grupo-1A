@@ -39,7 +39,9 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
     case 3:
     { // memoria
         bytes &= 0x00FFFFFF;
-        leerMemoria(mv, obtenerDirLogica(mv, bytes), 4, mv->registros[DS]);
+        char codRegistro = (valor & 0x001F0000) >> 16;
+        int segmento = obtenerHigh(mv->registros[codRegistro]);
+        leerMemoria(mv, obtenerDirLogica(mv, bytes), 4, segmento);
         valor = mv->registros[MBR];
         break;
     }
@@ -98,7 +100,7 @@ int leerValMemoria(Tmv *mv, int cantBytes, int posFisica)
 void leerMemoria(Tmv* mv, int dirLogica, int cantBytes, int segmento)
 {
     //busco las posiciones fisicas del segmento al que quiero acceder
-    int tabla = mv->tablaSegmentos[obtenerHigh(segmento)];
+    int tabla = mv->tablaSegmentos[segmento];
     int baseSegmento = obtenerHigh(tabla);
     int tamSegmento = obtenerLow(tabla);
 
@@ -150,7 +152,9 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
     case 3:
     { // memoria
         operando &= 0x00FFFFFF;
-        escribirMemoria(mv, obtenerDirLogica(mv, operando), 4, valor, mv->registros[DS]);
+        char codRegistro = (valor & 0x001F0000) >> 16;
+        int segmento = obtenerHigh(mv->registros[codRegistro]);
+        escribirMemoria(mv, obtenerDirLogica(mv, operando), 4, valor, segmento);
         break;
     }
     }
@@ -160,7 +164,7 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
 //escribe en la memoria actualizando registros LAR, MAR y MBR
 void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor, int segmento){
     //obtengo dimensiones fisicas del segmentos al que quiero acceder
-    int tabla = mv->tablaSegmentos[obtenerHigh(segmento)];
+    int tabla = mv->tablaSegmentos[segmento];
     int baseSegmento = obtenerHigh(tabla);
     int tamSegmento = obtenerLow(tabla);
 
@@ -178,12 +182,8 @@ void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor, int segme
         mv->registros[MAR] = combinarHighLow(cantBytes, offsetFisico);
         //escribo la memoria
         for(int i = cantBytes - 1; i >= 0; i--){
-            if(!estaEnMemoriaAccedida(mv, offsetFisico + i)){
-                mv->memoriaAccedida[mv->nMemoriaAccedida] = offsetFisico + i;
-                (mv->nMemoriaAccedida)++;
-            }
             mv->memoria[offsetFisico + i] = valor & 0x000000FF;
-            valor >>= 8;//TODO verificar si esta bien el orden
+            valor >>= 8;
         }
     }
     else
