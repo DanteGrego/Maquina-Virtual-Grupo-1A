@@ -54,6 +54,40 @@ const char* mnemonicos[CANT_REGISTROS] = {
     [0x1E] = "LDH",
     [0x1F] = "RND"
 };
+const int vectorTraductorIndicesCOperacion[32] = {
+    [0x00] = 0,
+    [0x01] = 1,
+    [0x02] = 2,
+    [0x03] = 3,
+    [0x04] = 4,
+    [0x05] = 5,
+    [0x06] = 6,
+    [0x07] = 7,
+    [0x08] = 8,
+    [0x09] = -1,
+    [0x0A] = -1,
+    [0x0B] = 9, // push
+    [0x0C] = 10, // pop
+    [0x0D] = 11, // call
+    [0x0E] = 1, //ret
+    [0x0F] = 0, //stop
+    [0x10] = 0,
+    [0x11] = 1,
+    [0x12] = 2,
+    [0x13] = 3,
+    [0x14] = 4,
+    [0x15] = 5,
+    [0x16] = 6,
+    [0x17] = 7,
+    [0x18] = 8,
+    [0x19] = 9,
+    [0x1A] = 1,
+    [0x1B] = 1,
+    [0x1C] = 1,
+    [0x1D] = 1,
+    [0x1E] = 1,
+    [0x1F] = 15
+};
 /*
 // en desuso
 const char* formatosLectura[CANT_FORMATOS - 1] = {" %d", " %c", " %o", " %x"};
@@ -76,7 +110,8 @@ const void (*pfuncionImpresion[CANT_FORMATOS])(unsigned int, int) = {
 };
 
 const void (*pfuncion0Param[CANT_FUNCIONES_0_PARAM])(Tmv *mv) = {
-    [0x00] = &STOP
+    [0x00] = &STOP,
+    [0x01] = &RET
 };
 
 const void (*pfuncion1Param[CANT_FUNCIONES_1_PARAM])(Tmv *mv, int) = {
@@ -89,9 +124,9 @@ const void (*pfuncion1Param[CANT_FUNCIONES_1_PARAM])(Tmv *mv, int) = {
     [0x06] = &JNP,
     [0x07] = &JNN,
     [0x08] = &NOT,
-    [0x0B] = &PUSH,
-    [0x0C] = &POP,
-    [0x0D] = &CALL
+    [0x09] = &PUSH,
+    [0x0A] = &POP,
+    [0x0B] = &CALL
 };
 
 const void (*pfuncion2Param[CANT_FUNCIONES_2_PARAM])(Tmv *mv, int, int) = {
