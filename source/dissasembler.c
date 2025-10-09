@@ -133,7 +133,7 @@ void disassembler(Tmv* mv) {
     const int ancho_tab = 32;
 
     //imprime K segment si existe
-
+    impKS(mv);
 
     while (ip < tam + base) {
         unsigned char ins  = mv->memoria[ip];
