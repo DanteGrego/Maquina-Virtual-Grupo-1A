@@ -136,6 +136,7 @@ void STOP(Tmv* mv);
 //funciones para dissasembler
 void disassembler(Tmv* mv);
 void impNombreOperando(Tmv* mv, int ip, int tipo);
+void impKS(Tmv* mv);
 
 extern const int (*pfuncionLectura[])();
 extern const void (*pfuncionImpresion[])(unsigned int, int);
