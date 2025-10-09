@@ -287,7 +287,7 @@ void STOP(Tmv *mv){
 }
 
 void RET(Tmv *mv){
-    int operando = 1 << 6;
+    int operando = 1 << 24;
     operando += IP;
 
     POP(mv, operando);
