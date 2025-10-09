@@ -41,10 +41,13 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
         }
         else
             if (mv.fileNameVmx != NULL){    // si hay vmx ->
+                int *vectorPunteros = (int *) malloc(sizeof(int)*(numeroArgumentos-i));
                 mv.memoria = (char *) malloc(mv.tamMemoria);
                 int tamPS = 0;
+                int k = 0;
                 while (i < numeroArgumentos){ // cargo los parametros en el param segment y obtengo su tamaño
                     int j = 0;
+                    vectorPunteros[k++] = tamPS;
                     do{
                         if (tamPS >= mv.tamMemoria){
                             printf("Excedido tamanio de memoria");
@@ -54,6 +57,13 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                         tamPS++;
                     } while (vectorArgumentos[i][j++] != '\0');
                     i++;
+                }
+                for (int w = 0; w < k; w++, tamPS+=4){
+                    if (tamPS >= mv.tamMemoria){
+                            printf("Excedido tamanio de memoria");
+                            exit(-1);
+                    }
+                    mv.memoria[tamPS] = vectorPunteros[w];
                 }
                 leerArchivoVmx(&mv,tamPS);
             }
