@@ -1,8 +1,21 @@
 #include "mv.h"
 
+void cargoTamMemoria(Tmv* mv, char* argumento){
+    int tamMemoria = 0;
+    int i = 0;
+
+    while(argumento[i] != '\0'){
+        tamMemoria *= 10;
+        tamMemoria += argumento[i] - '0';
+        i++;
+    }
+
+    mv->tamMemoria = tamMemoria;
+}
+
 void inicializarTablaRegistrosVersion1(Tmv* mv, FILE* arch){
     int tamCodigo;
-    fread(tamCodigo, 2, 1, arch);
+    fread(&tamCodigo, 2, 1, arch);
 
     mv->tablaSegmentos[0] = combinarHighLow(0, tamCodigo);
     mv->tablaSegmentos[1] = combinarHighLow(tamCodigo, mv->tamMemoria - tamCodigo);
@@ -15,6 +28,7 @@ void inicializarTablaRegistrosVersion1(Tmv* mv, FILE* arch){
 
 void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
     int tamSegmento, baseSegmento = 0, segmento = 0, entryPoint;
+    char lectura[2];
 
     if(tamPS > 0){
         mv->tablaSegmentos[0] = combinarHighLow(0, tamPS);
@@ -24,7 +38,8 @@ void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
     }
 
     for(int i = 0; i < 5; i++){//leo el tamanio de 5 segmentos
-        fread(&tamSegmento, 2, 1, arch);
+        fread(lectura, 1, 2, arch);
+        tamSegmento = lectura[0] * 256 + lectura[1];
         if(tamSegmento > 0){
             if(baseSegmento + tamSegmento > mv->tamMemoria){
                 printf("Memoria insuficiente");
@@ -44,7 +59,8 @@ void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
         mv->registros[SP] = mv->registros[SS] + tamPila;
     }
 
-    fread(&entryPoint, 2, 1, arch);
+    fread(lectura, 1, 2, arch);
+    entryPoint = lectura[0] * 256 + lectura[1];
     mv->registros[IP] = mv->registros[CS] + entryPoint;
 }
 
@@ -59,14 +75,16 @@ void cargarCS(Tmv* mv, FILE* arch){
 
 void leerArchivoVmx(Tmv *mv, int tamPS)
 {
-    unsigned char cabecera[5], version;
+    unsigned char cabecera[6], version;
     FILE *arch;
+
     arch = fopen(mv->fileNameVmx, "rb");
 
     if (arch != NULL)
     {
         //leo cabecera
         fread(cabecera, sizeof(unsigned char), TAM_IDENTIFICADOR, arch);
+        cabecera[5] = '\0';
 
         //me fijo si el archivo es valido por la cabecera
         if (strcmp(cabecera, "VMX25") == 0)
@@ -76,10 +94,12 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
             switch(version){
                 case 1:{
                     inicializarTablaRegistrosVersion1(mv, arch);
+                    mv->version = 1;
                     break;
                 }
                 case 2:{
                     inicializarTablaRegistrosVersion2(mv, arch, tamPS);
+                    mv->version = 2;
                     break;
                 }
                 default:{

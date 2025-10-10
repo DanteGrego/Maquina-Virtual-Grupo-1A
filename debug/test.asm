@@ -1,4 +1,5 @@
-inicio: mov EDX, DS
+inicio: sys 0xF
+        mov EDX, DS
         ldh ECX, 0x04
         ldl ECX, 0x01
         mov EAX, 0x01

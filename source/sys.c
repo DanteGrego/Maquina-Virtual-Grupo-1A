@@ -96,7 +96,10 @@ void limpiarBuffers(){
     fflush(stdout);
 }
 
-void sysLeer(Tmv* mv, int cantCeldas, int tamCelda, int formato){
+void sysLeer(Tmv* mv){
+    int formato = mv->registros[EAX];
+    int cantCeldas = obtenerLow(mv->registros[ECX]);
+    int tamCelda = obtenerHigh(mv->registros[ECX]);
     int segmento = mv->registros[EDX];
     for(int i = 0; i < cantCeldas; i++){
         int posActual = mv->registros[EDX] + i * tamCelda;
@@ -117,7 +120,10 @@ void sysLeer(Tmv* mv, int cantCeldas, int tamCelda, int formato){
     }
 }
 
-void sysEscribir(Tmv* mv, int cantCeldas, int tamCelda, int formato){
+void sysEscribir(Tmv* mv){
+    int formato = mv->registros[EAX];
+    int cantCeldas = obtenerLow(mv->registros[ECX]);
+    int tamCelda = obtenerHigh(mv->registros[ECX]);
     int segmento = obtenerHigh(mv->registros[EDX]);
     for(int i = 0; i < cantCeldas; i++){
         int posActual = mv->registros[EDX] + i * tamCelda;
@@ -137,36 +143,32 @@ void sysEscribir(Tmv* mv, int cantCeldas, int tamCelda, int formato){
 
 void SYS(Tmv* mv, int operando){
     int valor = getValor(mv, operando); // valor decide que funcion del sistema se quiere utilizar   1. escritura   2. lectura
-    int formato = mv->registros[EAX];
-    int cantCeldas = obtenerLow(mv->registros[ECX]);
-    int tamCelda = obtenerHigh(mv->registros[ECX]);
-
-    if(tamCelda <= 4 && tamCelda > 0 && tamCelda != 3 && formato > 0)
-        switch(valor){
-            case 1:{ // lectura
-                sysLeer(mv, cantCeldas, tamCelda, formato);
-                break;
-            }
-            case 2:{ // escritura
-                sysEscribir(mv, cantCeldas, tamCelda, formato);
-                break;
-            }
-            case 3:{
-                sysStringRead(mv);
-                break;
-            }
-            case 4:{
-                sysStringWrite(mv);
-                break;
-            }
-            case 0xF:{
-                sysBreakpoint(mv);
-                break;
-            }
-            default:{
-                //TODO que hace si sys tiene operando erroneo?
-            }
+    
+    switch(valor){
+        case 1:{ // lectura
+            sysLeer(mv);
+            break;
         }
+        case 2:{ // escritura
+            sysEscribir(mv);
+            break;
+        }
+        case 3:{
+            sysStringRead(mv);
+            break;
+        }
+        case 4:{
+            sysStringWrite(mv);
+            break;
+        }
+        case 0xF:{
+            sysBreakpoint(mv);
+            break;
+        }
+        default:{
+            //TODO que hace si sys tiene operando erroneo?
+        }
+    }
 }
 
 void generarArchivoImagen(Tmv* mv){

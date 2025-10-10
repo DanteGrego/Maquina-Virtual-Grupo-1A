@@ -14,7 +14,6 @@
 				"consts.c",
 				"gettersetter.c",
 				"sys.c",
-				"debugpropio.c",
 				"inicializacion.c",
 				"-o",
 				"${workspaceFolder}/debug/vmx.exe"
@@ -42,6 +41,7 @@
 			"command": "${workspaceFolder}/debug/vmx.exe",
 			"args": [
 				"${workspaceFolder}/debug/test.vmx",
+				"${workspaceFolder}/debug/test.vmi",
 				"-d"
 			],
 			"group": "test",
@@ -52,31 +52,11 @@
 				"panel": "shared"
 			},
 			"dependsOn": [
+				"Compilar vmx.exe",
 				"Ejecutar vmt.exe"
 			],
 			"dependsOrder": "sequence",
 			"problemMatcher": []
-		},
-		{
-			"label": "Ejecutar debug vmx.exe",
-			"type": "shell",
-			"command": "${workspaceFolder}/debug/vmx.exe",
-			"args": [
-				"${workspaceFolder}/debug/test.vmx",
-				"-d",
-				"-dev"
-			],
-			"group": "test",
-			"presentation": {
-				"echo": true,
-				"reveal": "always",
-				"focus": true,
-				"panel": "dedicated"
-			},
-			"dependsOn": [
-				"Ejecutar vmt.exe"
-			],
-			"dependsOrder": "sequence"
 		},
 		{
 			"label": "Ejecutar vmt.exe",
@@ -95,24 +75,23 @@
 			}
 		},
 		{
-			"label": "Compilar y ejecutar vmx.exe",
-			"dependsOn": [
-				"Compilar vmx.exe",
-				"Ejecutar vmx.exe"
+			"label": "Ejecutar vmg.exe",
+			"type": "shell",
+			"command": "${workspaceFolder}/debug/vmg.exe",
+			"args": [
+				"test.vmi",
+				"-r",
+				"-s",
+				"w=5"
 			],
-			"dependsOrder": "sequence",
-			"group": "none",
-			"problemMatcher": []
-		},
-		{
-			"label": "Compilar y ejecutar debug vmx.exe",
-			"dependsOn": [
-				"Compilar vmx.exe",
-				"Ejecutar debug vmx.exe"
-			],
-			"dependsOrder": "sequence",
-			"group": "none",
-			"problemMatcher": []
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": true,
+				"panel": "dedicated",
+				"clear": true
+			}
 		}
 	]
 }

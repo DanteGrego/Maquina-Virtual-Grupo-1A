@@ -1,16 +1,15 @@
 #include "mv.h"
-#include <windows.h>
 
 int main(int numeroArgumentos, char *vectorArgumentos[])
 {
     Tmv mv;
-    mv.fileNameVmx = NULL;              // nombre del archivo.vmx
-    mv.fileNameVmi = NULL;              // nombre del archivo.vmy 
+    //mv.fileNameVmx = NULL;              // nombre del archivo.vmx
+    //mv.fileNameVmi = NULL;              // nombre del archivo.vmy 
     mv.tamMemoria = TAM_MEMORIA;        // se inicializa en 16Kib
-           
+
     char imprimoDesensamblado = 0; // condicion booleana que decide mostrar el codigo desensamblado
     char ingresoDebug;
-    Tmv mv;
+
     if (numeroArgumentos < 2)
     {
         printf("Numero insuficiente de argumentos");
@@ -19,14 +18,14 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     else
     {
         int i = 1;
-        char* argumentoActual;
-        char *extensionArchivo;
+        char argumentoActual[500];
+        char extensionArchivo[500];
         while (i < numeroArgumentos && strcmp(vectorArgumentos[i],"-p") != 0){
-            strcpy(argumentoActual,vectorArgumentos[i]);
-            strcpy(extensionArchivo,getExtension(argumentoActual));
-            if (strcmp(extensionArchivo,".vmx"))
+            strcpy(argumentoActual, vectorArgumentos[i]);
+            strcpy(extensionArchivo, getExtension(argumentoActual));
+            if (strcmp(extensionArchivo, ".vmx") == 0)
                 strcpy(mv.fileNameVmx,argumentoActual);
-            else if (strcmp(extensionArchivo,".vmi"))
+            else if (strcmp(extensionArchivo, ".vmi") == 0)
                 strcpy(mv.fileNameVmi,argumentoActual);
             else if (argumentoActual[0] == 'm' && argumentoActual[1] == '=')
                 cargoTamMemoria(&mv, argumentoActual); // aca se carga mv.tamMemoria, si nunca entra ya se inicializo en 16Kib
@@ -37,13 +36,14 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 
         if (mv.fileNameVmi == NULL && mv.fileNameVmx == NULL){
             printf("ERROR: no se especificaron archivos para la ejecucion");
-            exit(-1);
+            return -1;
         }
         else
             if (mv.fileNameVmx != NULL){    // si hay vmx ->
-                int *vectorPunteros = (int *) malloc(sizeof(int)*(numeroArgumentos-i));
-                mv.memoria = (char *) malloc(mv.tamMemoria);
+                int *vectorPunteros = (int*) malloc(sizeof(int)*(numeroArgumentos-i));
+                mv.memoria = (char*) malloc(mv.tamMemoria);
                 int tamPS = 0;
+                int posArgv = 0;
                 int k = 0;
                 while (i < numeroArgumentos){ // cargo los parametros en el param segment y obtengo su tamaño
                     int j = 0;
@@ -58,14 +58,28 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     } while (vectorArgumentos[i][j++] != '\0');
                     i++;
                 }
-                for (int w = 0; w < k; w++, tamPS+=4){
-                    if (tamPS >= mv.tamMemoria){
+                posArgv = tamPS;
+                for (int w = 0; w < k; w++){//cargo punteros a los parametros en el param segment
+                    if (tamPS + 4 >= mv.tamMemoria){
                             printf("Excedido tamanio de memoria");
                             exit(-1);
                     }
-                    mv.memoria[tamPS] = vectorPunteros[w];
+                    for(int x = 0; x < 4; x++)
+                        mv.memoria[tamPS+x] = (vectorPunteros[w] >> 8 * (3 - x)) && 0x000000FF;
                 }
-                leerArchivoVmx(&mv,tamPS);
+
+                leerArchivoVmx(&mv, tamPS);
+                if(mv.version == 2){
+                    if(tamPS == 0)
+                        posArgv = -1;
+
+                    mv.registros[SP] -= 4;
+                    escribirMemoria(&mv, mv.registros[SP], 4, posArgv, obtenerHigh(mv.registros[SS]));
+                    mv.registros[SP] -= 4;
+                    escribirMemoria(&mv, mv.registros[SP], 4, k, obtenerHigh(mv.registros[SS]));//escribo argc
+                    mv.registros[SP] -= 4;
+                    escribirMemoria(&mv, mv.registros[SP], 4, -1, obtenerHigh(mv.registros[SS]));//escribo ret del main
+                }
             }
             else{
                 leerArchivoVmi(&mv);
@@ -75,7 +89,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         while(seguirEjecutando(&mv)){
-
             leerInstruccion(&mv);
             ejecutarInstruccion(&mv);
             if(mv.modoDebug){
@@ -191,6 +204,7 @@ void ejecutarInstruccion(Tmv *mv){
     op1 = mv->registros[OP1];
     op2 = mv->registros[OP2];
     opC = mv->registros[OPC];
+
     //funciones de 0 parametros
     if (opC >= 0x0E && opC <= 0x0F){
         opC = vectorTraductorIndicesCOperacion[opC];
