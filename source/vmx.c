@@ -63,7 +63,10 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                             printf("Excedido tamanio de memoria");
                             exit(-1);
                     }
-                    mv.memoria[tamPS] = vectorPunteros[w];
+                    mv.memoria[tamPS] = (vectorPunteros[w] >> 24) && 0x000000FF;
+                    mv.memoria[tamPS+1] = (vectorPunteros[w] >> 16) && 0x000000FF;
+                    mv.memoria[tamPS+2] = (vectorPunteros[w] >> 8) && 0x000000FF;
+                    mv.memoria[tamPS+3] = vectorPunteros[w] && 0x000000FF;
                 }
                 leerArchivoVmx(&mv,tamPS);
             }
