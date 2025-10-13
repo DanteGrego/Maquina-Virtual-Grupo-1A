@@ -179,7 +179,7 @@ void generarArchivoImagen(Tmv* mv){
         printf("No se pudo abrir el archivo .vmi");//(debug)
     }else{
         //header
-        char* identificador = "VMI25";
+        char identificador[] = "VMI25";
         fwrite(identificador, 5, 1, arch);
         char version = 1;
         fwrite(&version, 1, 1, arch);
