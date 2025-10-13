@@ -74,7 +74,8 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     for(int x = 0; x < 4; x++)
                         mv.memoria[tamPS+x] = (vectorPunteros[w] >> 8 * (3 - x)) && 0x000000FF;
                 }
-
+                printf("salio del for de parametros \n");
+                
                 leerArchivoVmx(&mv, tamPS);
 
                 printf("Se leyo el archivo vmx \n");
