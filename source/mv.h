@@ -46,7 +46,7 @@
 
 typedef struct Tmv{
     char *memoria;  // previamente memoria[TAM_MEMORIA];
-    char fileNameVmi[500], fileNameVmx[10000];
+    char *fileNameVmi, *fileNameVmx;
     int tamMemoria; // se inicializa en el main
     int registros[CANT_REGISTROS];
     int tablaSegmentos[CANT_SEGMENTOS];
