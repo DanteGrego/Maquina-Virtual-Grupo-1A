@@ -40,18 +40,26 @@ void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
     for(int i = 0; i < 5; i++){//leo el tamanio de 5 segmentos
         fread(lectura, 1, 2, arch);
         tamSegmento = lectura[0] * 256 + lectura[1];
+        printf("segmento: %d\n", segmento);
+        printf("baseSegmento: %x\n", baseSegmento);
+        printf("tamSegmento: %x\n", tamSegmento);
         if(tamSegmento > 0){
             if(baseSegmento + tamSegmento > mv->tamMemoria){
                 printf("Memoria insuficiente");
                 exit(-1);
             }
-            mv->tablaSegmentos[CS+segmento] = combinarHighLow(baseSegmento, tamSegmento);
+            mv->tablaSegmentos[segmento] = combinarHighLow(baseSegmento, tamSegmento);
             mv->registros[CS+i] = combinarHighLow(segmento, 0);
             segmento++;
             baseSegmento += tamSegmento;
         }else{
             mv->registros[CS+i] = -1;
         }
+
+    }
+    for(int i = 0; i < CANT_SEGMENTOS; i++){
+        printf("Tabla %d: %x, %x\n", i, obtenerHigh(mv->tablaSegmentos[i]), obtenerLow(mv->tablaSegmentos[i]));
+        printf("Registro: %x\n", mv->registros[CS+i]);
     }
 
     if(mv->registros[SS] > 0){
@@ -80,17 +88,22 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
 
     arch = fopen(mv->fileNameVmx, "rb");
 
+    printf("Se abrio el archivo\n");
+
     if (arch != NULL)
     {
         //leo cabecera
         fread(cabecera, sizeof(unsigned char), TAM_IDENTIFICADOR, arch);
         cabecera[5] = '\0';
 
+        printf("Cabecera: %s\n", cabecera);
+
         //me fijo si el archivo es valido por la cabecera
         if (strcmp(cabecera, "VMX25") == 0)
         {
             //leo version y tamano del codigo
-            fread(&version, sizeof(unsigned char), 1, arch);
+            fread(&version, 1, 1, arch);
+            printf("Version: %d\n", version);
             switch(version){
                 case 1:{
                     inicializarTablaRegistrosVersion1(mv, arch);
@@ -98,6 +111,7 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
                     break;
                 }
                 case 2:{
+                    printf("Entro a version 2\n");
                     inicializarTablaRegistrosVersion2(mv, arch, tamPS);
                     mv->version = 2;
                     break;
