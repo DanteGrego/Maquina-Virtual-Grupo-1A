@@ -94,18 +94,19 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             else{
                 leerArchivoVmi(&mv);
             }
-
+/*
         if (imprimoDesensamblado == 1)
             disassembler(&mv);
-            
+*/
+
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         int debugi = 0;
         while(seguirEjecutando(&mv)){
             printf("debug i: %d ",debugi++);
             leerInstruccion(&mv);
-            printf("  se leyo inst:");
+            printf("  se leyo inst OPC: %d", mv.registros[OPC]);
             ejecutarInstruccion(&mv);
-            printf("  se ejecuto inst: \n");
+            printf("  se ejecuto inst: IP: %d\n",mv.registros[IP]);
             if(mv.modoDebug){
                 scanf("%c", &ingresoDebug);
                 switch(ingresoDebug){
