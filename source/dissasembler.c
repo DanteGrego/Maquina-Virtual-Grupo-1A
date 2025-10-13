@@ -128,7 +128,7 @@ void disassembler(Tmv* mv) {
     int i = obtenerHigh(mv->registros[CS]);
     int base = obtenerHigh(mv->tablaSegmentos[i]); // base seg código
     int tam  = obtenerLow(mv->tablaSegmentos[i]);  // tamaño seg código
-    int entryPoint = pbtenerLow(mv->registros[IP]) + base;
+    int entryPoint = obtenerLow(mv->registros[IP]) + base;
     int ip = base;
     
 
