@@ -210,7 +210,7 @@ void ejecutarInstruccion(Tmv *mv){
         opC = vectorTraductorIndicesCOperacion[opC];
         pfuncion0Param[opC](mv);
     }//funciones de 1 parametro
-    else if (opC >= 0x00 && opC <= 0x08){
+    else if (opC >= 0x00 && opC <= 0x08 || opC >= 0x0B && opC <= 0x0D){
         opC = vectorTraductorIndicesCOperacion[opC];
         pfuncion1Param[opC](mv, mv->registros[OP1]);
     }//funciones de 2 parametros
