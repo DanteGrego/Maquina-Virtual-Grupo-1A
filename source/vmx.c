@@ -75,7 +75,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                         mv.memoria[tamPS+x] = (vectorPunteros[w] >> 8 * (3 - x)) && 0x000000FF;
                 }
                 printf("salio del for de parametros \n");
-                
+
                 leerArchivoVmx(&mv, tamPS);
 
                 printf("Se leyo el archivo vmx \n");
@@ -95,12 +95,17 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                 leerArchivoVmi(&mv);
             }
 
-
+        if (imprimoDesensamblado == 1)
+            disassembler(&mv);
             
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
+        int debugi = 0;
         while(seguirEjecutando(&mv)){
+            printf("debug i: %d ",debugi++);
             leerInstruccion(&mv);
+            printf("  se leyo inst:");
             ejecutarInstruccion(&mv);
+            printf("  se ejecuto inst: \n");
             if(mv.modoDebug){
                 scanf("%c", &ingresoDebug);
                 switch(ingresoDebug){
