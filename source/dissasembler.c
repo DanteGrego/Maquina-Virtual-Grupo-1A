@@ -3,8 +3,10 @@
 
 void impKS(Tmv* mv){
     if (mv->registros[KS] != -1){
-        int base = obtenerHigh(mv->tablaSegmentos[CS]); 
-        int tam  = obtenerLow (mv->tablaSegmentos[CS]);
+
+        int aux = obtenerHigh(mv->registros[KS]);
+        int base = obtenerHigh(mv->tablaSegmentos[aux]); 
+        int tam  = obtenerLow (mv->tablaSegmentos[aux]);
         int i = base;
 
         const int ancho_tab = 32; // mismo ancho que disassembler
@@ -123,9 +125,10 @@ void impNombreOperando(Tmv* mv, int ip, int tipo) {
 }
 
 void disassembler(Tmv* mv) {
-    int base = obtenerHigh(mv->tablaSegmentos[CS]); // base seg código
-    int tam  = obtenerLow(mv->tablaSegmentos[CS]);  // tamaño seg código
-    int entryPoint = IP;
+    int i = obtenerHigh(mv->registros[CS]);
+    int base = obtenerHigh(mv->tablaSegmentos[i]); // base seg código
+    int tam  = obtenerLow(mv->tablaSegmentos[i]);  // tamaño seg código
+    int entryPoint = obtenerLow(mv->registros[IP]) + base;
     int ip = base;
     
 
