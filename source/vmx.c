@@ -9,6 +9,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 
     char imprimoDesensamblado = 0; // condicion booleana que decide mostrar el codigo desensamblado
     char ingresoDebug;
+    printf("entro al main \n");
 
     if (numeroArgumentos < 2)
     {
@@ -17,10 +18,12 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     }
     else
     {
+        printf("numero de argumentos: %d \n", numeroArgumentos);
         int i = 1;
         char argumentoActual[500];
         char extensionArchivo[500];
         while (i < numeroArgumentos && strcmp(vectorArgumentos[i],"-p") != 0){
+            printf("argumento actual: %s \n", vectorArgumentos[i]);
             strcpy(argumentoActual, vectorArgumentos[i]);
             strcpy(extensionArchivo, getExtension(argumentoActual));
             if (strcmp(extensionArchivo, ".vmx") == 0)
@@ -40,6 +43,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
         }
         else
             if (mv.fileNameVmx != NULL){    // si hay vmx ->
+                printf("hay archivo vmx \n");
                 int *vectorPunteros = (int*) malloc(sizeof(int)*(numeroArgumentos-i));
                 mv.memoria = (char*) malloc(mv.tamMemoria);
                 int tamPS = 0;
