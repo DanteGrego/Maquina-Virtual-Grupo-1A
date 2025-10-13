@@ -52,7 +52,6 @@
 				"panel": "shared"
 			},
 			"dependsOn": [
-				"Compilar vmx.exe",
 				"Ejecutar vmt.exe"
 			],
 			"dependsOrder": "sequence",
@@ -79,7 +78,7 @@
 			"type": "shell",
 			"command": "${workspaceFolder}/debug/vmg.exe",
 			"args": [
-				"test.vmi",
+				"debug/test.vmi",
 				"-r",
 				"-s",
 				"w=5"
