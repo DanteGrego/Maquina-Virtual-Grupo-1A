@@ -81,13 +81,19 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                 if(mv.version == 2){
                     if(tamPS == 0)
                         posArgv = -1;
-
+                    printf("SP0: %x\n", mv.registros[SP]);
                     mv.registros[SP] -= 4;
                     escribirMemoria(&mv, mv.registros[SP], 4, posArgv, obtenerHigh(mv.registros[SS]));
+                    printf("SP: %x\n", mv.registros[SP]);
+                    printf("Se escribio SSargv: %x\n", mv.memoria[obtenerDirFisica(&mv, mv.registros[SP])]);
                     mv.registros[SP] -= 4;
                     escribirMemoria(&mv, mv.registros[SP], 4, k, obtenerHigh(mv.registros[SS]));//escribo argc
+                    printf("SP: %x\n", mv.registros[SP]);
+                    printf("Se escribio SSargc: %x\n", mv.memoria[obtenerDirFisica(&mv, mv.registros[SP])]);
                     mv.registros[SP] -= 4;
                     escribirMemoria(&mv, mv.registros[SP], 4, -1, obtenerHigh(mv.registros[SS]));//escribo ret del main
+                    printf("SP: %x\n", mv.registros[SP]);
+                    printf("Se escribio SSret: %x\n", mv.memoria[obtenerDirFisica(&mv, mv.registros[SP])]);
                 }
             }
             else{
@@ -205,6 +211,7 @@ void leerInstruccion(Tmv *mv)
     mv->registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // masqueado por si era negativo, sino me tapa el top en el primer byte
     mv->registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
     mv->registros[IP] += 1 + top1 + top2;
+    printf("OP1: %x\nOP2: %x\nOPC: %x\nIP: %x\n", mv->registros[OP1], mv->registros[OP2], mv->registros[OPC], mv->registros[IP]);
 }
 
 //busco con el OPC que funcion es y la llamo con OP1 y OP2 cargados

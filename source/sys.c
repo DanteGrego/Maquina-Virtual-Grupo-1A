@@ -125,6 +125,8 @@ void sysEscribir(Tmv* mv){
     int cantCeldas = obtenerLow(mv->registros[ECX]);
     int tamCelda = obtenerHigh(mv->registros[ECX]);
     int segmento = obtenerHigh(mv->registros[EDX]);
+    printf("ECX: %x\n", mv->registros[ECX]);
+    printf("Sys escribir: \nformato: %d\ncantCeldas: %d\ntamCelda:%d\nsegmento:%d\n", formato, cantCeldas, tamCelda, segmento);
     for(int i = 0; i < cantCeldas; i++){
         int posActual = mv->registros[EDX] + i * tamCelda;
         printf("[%04X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
@@ -180,16 +182,31 @@ void generarArchivoImagen(Tmv* mv){
     }else{
         //header
         char identificador[] = "VMI25";
-        fwrite(identificador, 5, 1, arch);
+        fwrite(identificador, 1, 5, arch);
         char version = 1;
         fwrite(&version, 1, 1, arch);
-        fwrite(&mv->tamMemoria, 2, 1, arch);
+        char tamMemoria[] = {(mv->tamMemoria & 0x0000FF00) >> 8, mv->tamMemoria & 0x000000FF};
+        fwrite(tamMemoria, 1, 2, arch);
 
         //registros
-        fwrite(mv->registros, 4, CANT_REGISTROS, arch);
+        for(int i = 0; i < CANT_REGISTROS; i++){
+            char registro[] = {(mv->registros[i]>>24)&0x000000FF,
+                                (mv->registros[i]>>16)&0x000000FF,
+                                (mv->registros[i]>>8)&0x000000FF,
+                                (mv->registros[i])&0x000000FF};
+            fwrite(registro, 1, 4, arch);
+        }
+        
 
         //tabla segmentos
-        fwrite(mv->tablaSegmentos, 4, CANT_SEGMENTOS, arch);
+        for(int i = 0; i < CANT_SEGMENTOS; i++){
+            char segmento[] = {(mv->tablaSegmentos[i]>>24)&0x000000FF,
+                                (mv->tablaSegmentos[i]>>16)&0x000000FF,
+                                (mv->tablaSegmentos[i]>>8)&0x000000FF,
+                                (mv->tablaSegmentos[i])&0x000000FF};
+            fwrite(segmento, 1, 4, arch);
+        }
+        
 
         //memoria
         fwrite(mv->memoria, 1, mv->tamMemoria, arch);

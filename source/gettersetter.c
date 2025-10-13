@@ -179,7 +179,7 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
         char registro = operando & 0x0000001F;
 
 
-        
+        printf("set registro: %x, tam: %x\n", registro, tipoTamanioRegistro);
         switch (tipoTamanioRegistro){
             case 0b00: mv->registros[registro] = valor; break;
             case 0b01: 
@@ -195,6 +195,8 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
                 mv->registros[registro] |= valor & 0x0000FFFF;
             break;
         }
+
+        printf("valor final: %x\n", mv->registros[registro]);
 
         break;
     }

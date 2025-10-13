@@ -70,6 +70,7 @@ void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
     fread(lectura, 1, 2, arch);
     entryPoint = lectura[0] * 256 + lectura[1];
     mv->registros[IP] = mv->registros[CS] + entryPoint;
+    printf("Ip (entrypoint):%x\n", mv->registros[IP]);
 }
 
 
@@ -78,6 +79,10 @@ void cargarCS(Tmv* mv, FILE* arch){
     int tamCS = obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]);
     //TODO fijarse si anda
     fread(mv->memoria + posMemoria, 1, tamCS, arch);
+    printf("Leido el codigo: tamCS: %x\n", obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]));
+    for(int i = 0; i < obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]); i++){
+        printf("%x ", (unsigned char)mv->memoria[posMemoria+i]);
+    }
 }
 
 
