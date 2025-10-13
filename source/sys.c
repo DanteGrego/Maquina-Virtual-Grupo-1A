@@ -176,7 +176,7 @@ void generarArchivoImagen(Tmv* mv){
 
     arch = fopen(mv->fileNameVmi, "wb");
     if(arch == NULL){
-        printf("No se pudo abrir el archivo .vmi");//(debug)
+        printf("No se pudo abrir el archivo .vmi: %s", mv->fileNameVmi);//(debug)
     }else{
         //header
         char identificador[] = "VMI25";

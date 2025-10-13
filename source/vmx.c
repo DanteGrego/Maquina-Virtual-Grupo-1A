@@ -3,8 +3,8 @@
 int main(int numeroArgumentos, char *vectorArgumentos[])
 {
     Tmv mv;
-    //mv.fileNameVmx = NULL;              // nombre del archivo.vmx
-    //mv.fileNameVmi = NULL;              // nombre del archivo.vmy 
+    mv.fileNameVmx = NULL;              // nombre del archivo.vmx
+    mv.fileNameVmi = NULL;              // nombre del archivo.vmy 
     mv.tamMemoria = TAM_MEMORIA;        // se inicializa en 16Kib
 
     char imprimoDesensamblado = 0; // condicion booleana que decide mostrar el codigo desensamblado
@@ -27,9 +27,9 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             strcpy(argumentoActual, vectorArgumentos[i]);
             strcpy(extensionArchivo, getExtension(argumentoActual));
             if (strcmp(extensionArchivo, ".vmx") == 0)
-                strcpy(mv.fileNameVmx,argumentoActual);
+                mv.fileNameVmx = vectorArgumentos[i];
             else if (strcmp(extensionArchivo, ".vmi") == 0)
-                strcpy(mv.fileNameVmi,argumentoActual);
+                mv.fileNameVmi = vectorArgumentos[i];
             else if (argumentoActual[0] == 'm' && argumentoActual[1] == '=')
                 cargoTamMemoria(&mv, argumentoActual); // aca se carga mv.tamMemoria, si nunca entra ya se inicializo en 16Kib
             else if (argumentoActual[0] == '-' && argumentoActual[1] == 'd')
