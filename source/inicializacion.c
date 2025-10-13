@@ -48,8 +48,9 @@ void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
                 printf("Memoria insuficiente");
                 exit(-1);
             }
-            mv->tablaSegmentos[CS+segmento] = combinarHighLow(baseSegmento, tamSegmento);
+            mv->tablaSegmentos[segmento] = combinarHighLow(baseSegmento, tamSegmento);
             mv->registros[CS+i] = combinarHighLow(segmento, 0);
+            printf("contenido registro: %x \n", mv->registros[CS+i]);
             segmento++;
             baseSegmento += tamSegmento;
         }else{
@@ -62,10 +63,12 @@ void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
         int tamPila = obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[SS])]);
         mv->registros[SP] = mv->registros[SS] + tamPila;
     }
+    printf("fin cargar SP\n");
 
     fread(lectura, 1, 2, arch);
-    entryPoint = lectura[0] * 256 + lectura[1];
+    entryPoint = (lectura[0] << 8) + lectura[1];
     mv->registros[IP] = mv->registros[CS] + entryPoint;
+    printf("fin inicializacion\n");
 }
 
 
