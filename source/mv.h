@@ -12,7 +12,7 @@
 #define TAM_MEMORIA 16384 //16 KiB en Bytes
 #define TAM_REGISTRO 32 //32 bits
 #define CANT_REGISTROS 32
-#define CANT_SEGMENTOS 2
+#define CANT_SEGMENTOS 8
 #define CANT_FORMATOS 5 // 0b, 0x, 0o 0c 0d
 #define TAM_IDENTIFICADOR 5 //del archivo, el "VMX25"
 #define CANT_FUNCIONES_0_PARAM 2
@@ -46,12 +46,12 @@
 
 typedef struct Tmv{
     char *memoria;  // previamente memoria[TAM_MEMORIA];
-    char *fileNameVmi, *fileNameVmx;
+    char fileNameVmi[500], fileNameVmx[10000];
     int tamMemoria; // se inicializa en el main
     int registros[CANT_REGISTROS];
-    int tamMemoria;
     int tablaSegmentos[CANT_SEGMENTOS];
     char modoDebug;//0: normal, '1': debug
+    char version;
 }Tmv;
 
 extern const char* nombreRegistros[];
@@ -67,13 +67,22 @@ int  obtenerHigh(int bytes);
 int  obtenerLow(int bytes);
 char obtengoTipoOperando(int bytes);
 
+//otras cuentas y accesos
+char* getExtension(char* cadena);
+
 //inicializacion
+void cargoTamMemoria(Tmv* mv, char* argumento);
+void cargarCS(Tmv* mv, FILE* arch);
+void cargarTodoMv(Tmv* mv, FILE* arch);
+void inicializarTablaRegistrosVersion1(Tmv* mv, FILE* arch);
+void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS);
 void leerArchivoVmx(Tmv *mv, int tamPS);
 void leerArchivoVmi(Tmv* mv);
 
+
 //cuentas entre direcciones
-int  obtenerDirLogica(Tmv* mv, int valor);
-int  obtenerDirFisica(Tmv *mv, int dirLogica);
+int obtenerDirLogica(Tmv* mv, int valor);
+int obtenerDirFisica(Tmv *mv, int dirLogica);
 
 //lectura y ejecucion de instrucciones
 void leerInstruccion(Tmv* mv);
@@ -81,6 +90,7 @@ void ejecutarInstruccion(Tmv *mv);
 int seguirEjecutando(Tmv* mv);
 int  getValor(Tmv *mv, int bytes);
 void setValor(Tmv *mv, int operando, int valor);
+
 //manipulacion de memoria
 void leerMemoria(Tmv* mv, int dirLogica, int cantBytes, int segmento);
 int leerValMemoria(Tmv *mv, int cantBytes, int posFisica);
@@ -101,6 +111,11 @@ int leerHexadecimal();
 int leerOctal();
 int leerCaracter();
 int leerDecimal();
+void generarArchivoImagen(Tmv* mv);
+void sysLeer(Tmv* mv);
+void sysEscribir(Tmv* mv);
+void sysStringRead(Tmv* mv);
+void sysStringWrite(Tmv* mv);
 void sysBreakpoint(Tmv* mv);
 
 //operaciones 2 parametros
