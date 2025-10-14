@@ -67,7 +67,7 @@ void impNombreOperando(Tmv* mv, int ip, int tipo) {
         case 1: { // registro
             // encuentro el sector de registros y lo imprimo segun corresponda
             char sec = ((unsigned char)(mv->memoria [ip+1]) >> 6); 
-            char reg = mv->memoria [ip+1];
+            char reg = mv->memoria [ip+1] & 0x001F;
             if(sec == 0)
                 printf("%s",nombreRegistros[reg]);
             else if(sec == 1)
@@ -105,11 +105,12 @@ void impNombreOperando(Tmv* mv, int ip, int tipo) {
             low  = (unsigned char)mv->memoria[ip + 3];
             num  = (high << 8) | low;
             num  = (num << 16) >> 16;
+            
             // imprimo según el signo el offset (o sin offset si es 0)
             if (num != 0)
-                snprintf(nombre, sizeof(nombre), "[%s%+d]", nombreRegistros[mv->memoria[ip + 1]], num);
+                snprintf(nombre, sizeof(nombre), "[%s%+d]", nombreRegistros[mv->memoria[ip + 1]& 0x1F] , num);
             else
-                snprintf(nombre, sizeof(nombre), "[%s]", nombreRegistros[mv->memoria[ip + 1]]);
+                snprintf(nombre, sizeof(nombre), "[%s]", nombreRegistros[mv->memoria[ip + 1]& 0x1F]);
             break;
         }
         default: { // tipo inválido
