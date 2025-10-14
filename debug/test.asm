@@ -1,13 +1,14 @@
-main:   mov eax, 10
-        mov ecx, 10
-        add eax, ecx
-        mov W[ds], eax
-        mov eax, 1
+TEXTO1 equ "Hola mundo\n"
+
+main:   push bp
+        mov bp, sp
+        push edx
+        mov edx, KS
+        add edx, TEXTO1
+        sys 0x4
+        pop edx
+        sys 0xf
+        mov sp, bp
+        pop bp
         ret
-        push al
-        pop ax
-        call main
-        ldl ecx, 1
-        ldh ecx, 4
-        sys 2
-        stop
+
