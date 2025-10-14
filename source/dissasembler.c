@@ -96,11 +96,11 @@ void impNombreOperando(Tmv* mv, int ip, int tipo) {
             num  = (high << 8) | low;
             num  = (num << 16) >> 16;
 
-            char *regName = (char*)nombreRegistros[mv->memoria[ip + 1] & 0x1F];
+            char *reg = (char*)nombreRegistros[mv->memoria[ip + 1] & 0x1F];
             if (num != 0) 
-                sprintf(nombre, "%c[%s%+d]", pref, regName, num);
+                sprintf(nombre, "%c[%s%+d]", pref, reg, num);
             else          
-                sprintf(nombre, "%c[%s]",     pref, regName);
+                sprintf(nombre, "%c[%s]",     pref, reg);
             break;
         }
         default:
