@@ -153,7 +153,6 @@ void LDL(Tmv *mv, int op1, int op2){
     
     valor1 = valor1 | valor2;
     setValor(mv,op1,valor1);
-    printf("LDL: %x\n", valor1);
 }
 
 //cargo los dos bytes mas significantes de op1 con los de op2
@@ -167,7 +166,6 @@ void LDH(Tmv *mv, int op1, int op2){
 
     valor1 = valor1 | valor2;
     setValor(mv,op1,valor1);
-    printf("LDH: %x\n", valor1);
 }
 
 //op1 = random >= 0 y < op2

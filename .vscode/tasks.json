@@ -78,7 +78,7 @@
 			"type": "shell",
 			"command": "${workspaceFolder}/debug/vmg.exe",
 			"args": [
-				"debug/test.vmi",
+				"${workspaceFolder}/debug/test.vmi",
 				"-r",
 				"-s",
 				"w=5"
