@@ -150,7 +150,7 @@ void LDL(Tmv *mv, int op1, int op2){
 
     valor1 &= 0xFFFF0000;
     valor2 &= 0X0000FFFF;
-
+    
     valor1 = valor1 | valor2;
     setValor(mv,op1,valor1);
 }

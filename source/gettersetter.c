@@ -154,11 +154,12 @@ int obtenerDirLogica(Tmv *mv, int valor)
 {
     //obtengo registro y offset
     char codRegistro = (valor & 0x001F0000) >> 16;
-    int offsetOp = valor & 0x0000FFFF;
+    int offsetOp = ((valor & 0x0000FFFF)<<16)>>16;
 
     //obtengo el registro con su codigo
     int valRegistro = mv->registros[codRegistro];
 
+    //printf("codRegistro:%x\noffsetOp:%x\nvalReg:%x\n", codRegistro, offsetOp, valRegistro);
     // la direccion logica resultante sera la direccion logica del registro + el offset del operando
     return valRegistro + offsetOp;
 }
@@ -179,7 +180,7 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
         char registro = operando & 0x0000001F;
 
 
-        
+        //printf("set registro: %x, tam: %x\n", registro, tipoTamanioRegistro);
         switch (tipoTamanioRegistro){
             case 0b00: mv->registros[registro] = valor; break;
             case 0b01: 
@@ -195,6 +196,8 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
                 mv->registros[registro] |= valor & 0x0000FFFF;
             break;
         }
+
+        //printf("valor final: %x\n", mv->registros[registro]);
 
         break;
     }
@@ -218,6 +221,7 @@ void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor, int segme
     int baseSegmento = obtenerHigh(tabla);
     int tamSegmento = obtenerLow(tabla);
 
+    //printf("dirLogica: %x\n", dirLogica);
     //actualizo LAR
     mv->registros[LAR] = dirLogica;
     //saco la direccion fisica con la logica

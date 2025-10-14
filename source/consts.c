@@ -84,11 +84,11 @@ const int vectorTraductorIndicesCOperacion[32] = {
     [0x17] = 7,
     [0x18] = 8,
     [0x19] = 9,
-    [0x1A] = 1,
-    [0x1B] = 1,
-    [0x1C] = 1,
-    [0x1D] = 1,
-    [0x1E] = 1,
+    [0x1A] = 10,
+    [0x1B] = 11,
+    [0x1C] = 12,
+    [0x1D] = 13,
+    [0x1E] = 14,
     [0x1F] = 15
 };
 /*
