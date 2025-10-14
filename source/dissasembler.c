@@ -57,73 +57,63 @@ void impKS(Tmv* mv){
     }
 }
 
-// disassembler: imprime el operando
 void impNombreOperando(Tmv* mv, int ip, int tipo) {
-    const int ancho = 18;           // ancho fijo de la columna del operando
-    char nombre[64];                // texto final del operando
-    int num, low, high;             // valores temporales
+    const int ancho = 18;
+    char nombre[64];
+    int num, low, high;
 
     switch (tipo) {
-        case 1: { // registro
-            // encuentro el sector de registros y lo imprimo segun corresponda
-            char sec = ((unsigned char)(mv->memoria [ip+1]) >> 6); 
-            char reg = mv->memoria [ip+1] & 0x001F;
-            if(sec == 0)
-                printf("%s",nombreRegistros[reg]);
-            else if(sec == 1)
-                printf("%cL",nombreRegistros[reg][1]);
-            else if(sec == 2)
-                printf("%cH",nombreRegistros[reg][1]);
-            else if(sec == 3)
-                printf("%cX",nombreRegistros[reg][1]);
-            else
-                printf("REGISTRO INVALIDO");
+        case 1: {
+            char sec = ((unsigned char)(mv->memoria[ip + 1]) >> 6); 
+            char reg = mv->memoria[ip + 1] & 0x1F;
+            if (sec == 0)      sprintf(nombre, "%s", nombreRegistros[reg]);
+            else if (sec == 1) sprintf(nombre, "%cL", nombreRegistros[reg][1]);
+            else if (sec == 2) sprintf(nombre, "%cH", nombreRegistros[reg][1]);
+            else if (sec == 3) sprintf(nombre, "%cX", nombreRegistros[reg][1]);
+            else               sprintf(nombre, "REG INVALIDO");
             break;
         }
-        case 2: { // inmediato (2 bytes)
-            // saco el valor con los dos bytes que ocupa el inmediato y propago signo
+        case 2: {
             high = (unsigned char)mv->memoria[ip + 1];
             low  = (unsigned char)mv->memoria[ip + 2];
             num  = (high << 8) | low;
             num  = (num << 16) >> 16;
-            snprintf(nombre, sizeof(nombre), "%d", num);
+            sprintf(nombre, "%d", num);
             break;
         }
-        case 3: { // memoria: [registro + offset]
-            // imprimo registro como caso 1 y calculo offset
-            char tamCelda = ((unsigned char)(mv->memoria [ip+1]) >> 6); 
-
-            if(tamCelda == 0)
-                printf("l");
+        case 3: {
+            char tamCelda = ((unsigned char)(mv->memoria[ip + 1]) >> 6); 
+            char pref = '?';
+            if (tamCelda == 0) 
+                pref = 'l';
             else if (tamCelda == 2)
-                printf("w");
-            else if (tamCelda == 3)
-                printf("b");
+                pref = 'w';
+            else if (tamCelda == 3) 
+                pref = 'b';
 
-            //hay que modificar
             high = (unsigned char)mv->memoria[ip + 2];
             low  = (unsigned char)mv->memoria[ip + 3];
             num  = (high << 8) | low;
             num  = (num << 16) >> 16;
-            
-            // imprimo según el signo el offset (o sin offset si es 0)
-            if (num != 0)
-                snprintf(nombre, sizeof(nombre), "[%s%+d]", nombreRegistros[mv->memoria[ip + 1]& 0x1F] , num);
-            else
-                snprintf(nombre, sizeof(nombre), "[%s]", nombreRegistros[mv->memoria[ip + 1]& 0x1F]);
+
+            char *reg = (char*)nombreRegistros[mv->memoria[ip + 1] & 0x1F];
+            if (num != 0) 
+                sprintf(nombre, "%c[%s%+d]", pref, reg, num);
+            else          
+                sprintf(nombre, "%c[%s]",     pref, reg);
             break;
         }
-        default: { // tipo inválido
+        default:
             nombre[0] = '\0';
             break;
-        }
     }
 
-    int largo   = (int)strlen(nombre);      // longitud del texto generado
-    int espacio = ancho - largo;            // relleno de espacios a la izquierda
+    int largo   = (int)strlen(nombre);
+    int espacio = 18 - largo;
     if (espacio < 0) espacio = 0;
     printf("%*s%s", espacio, "", nombre);
 }
+
 
 void disassembler(Tmv* mv) {
     int i = obtenerHigh(mv->registros[CS]);
@@ -175,7 +165,7 @@ void disassembler(Tmv* mv) {
 
             int espacios = ancho_tab - pos;
             if (espacios < 1) espacios = 1;
-            printf("%s%*s| %s ", izq, espacios, "", mnemonicos[opc]);
+            printf("%s%*s| %-4s", izq, espacios, "", mnemonicos[opc]);
             impNombreOperando(mv, ip, top1);
             printf("\n");
             ip += 1 + top1;
