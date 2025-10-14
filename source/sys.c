@@ -100,7 +100,7 @@ void sysLeer(Tmv* mv){
     int formato = mv->registros[EAX];
     int cantCeldas = obtenerLow(mv->registros[ECX]);
     int tamCelda = obtenerHigh(mv->registros[ECX]);
-    int segmento = mv->registros[EDX];
+    int segmento = obtenerHigh(mv->registros[EDX]);
     for(int i = 0; i < cantCeldas; i++){
         int posActual = mv->registros[EDX] + i * tamCelda;
         int valorLeido, leido = 0, j = 0;
@@ -125,8 +125,8 @@ void sysEscribir(Tmv* mv){
     int cantCeldas = obtenerLow(mv->registros[ECX]);
     int tamCelda = obtenerHigh(mv->registros[ECX]);
     int segmento = obtenerHigh(mv->registros[EDX]);
-    printf("ECX: %x\n", mv->registros[ECX]);
-    printf("Sys escribir: \nformato: %d\ncantCeldas: %d\ntamCelda:%d\nsegmento:%d\n", formato, cantCeldas, tamCelda, segmento);
+    //printf("ECX: %x\n", mv->registros[ECX]);
+    //printf("Sys escribir: \nformato: %d\ncantCeldas: %d\ntamCelda:%d\nsegmento:%d\n", formato, cantCeldas, tamCelda, segmento);
     for(int i = 0; i < cantCeldas; i++){
         int posActual = mv->registros[EDX] + i * tamCelda;
         printf("[%04X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
@@ -197,7 +197,6 @@ void generarArchivoImagen(Tmv* mv){
             fwrite(registro, 1, 4, arch);
         }
         
-
         //tabla segmentos
         for(int i = 0; i < CANT_SEGMENTOS; i++){
             char segmento[] = {(mv->tablaSegmentos[i]>>24)&0x000000FF,
@@ -207,7 +206,6 @@ void generarArchivoImagen(Tmv* mv){
             fwrite(segmento, 1, 4, arch);
         }
         
-
         //memoria
         fwrite(mv->memoria, 1, mv->tamMemoria, arch);
 

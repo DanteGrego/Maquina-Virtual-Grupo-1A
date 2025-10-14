@@ -27,10 +27,10 @@ void inicializarTablaRegistrosVersion1(Tmv* mv, FILE* arch){
 }
 
 void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
-    int tamSegmento, baseSegmento = 0, segmento = 0, entryPoint;
-    char lectura[2];
+    int tamSegmento = 0, baseSegmento = 0, segmento = 0, entryPoint;
+    unsigned char lectura[2];
 
-    printf("tamPS: %d\n", tamPS);
+    //printf("tamPS: %d\n", tamPS);
 
     if(tamPS > 0){
         mv->tablaSegmentos[0] = combinarHighLow(0, tamPS);
@@ -41,11 +41,12 @@ void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
 
     for(int i = 0; i < 5; i++){//leo el tamanio de 5 segmentos
         fread(lectura, 1, 2, arch);
+        //printf("lectura: %x, %x\n", lectura[0], lectura[1]);
         tamSegmento = (lectura[0] << 8) + lectura[1];
-        printf("tamSegmento %d \n",tamSegmento);
-        printf("segmento: %d\n", segmento);
-        printf("baseSegmento: %x\n", baseSegmento);
-        printf("tamSegmento: %x\n", tamSegmento);
+        //printf("tamSegmento %d \n",tamSegmento);
+        //printf("segmento: %d\n", segmento);
+        //printf("baseSegmento: %x\n", baseSegmento);
+        //printf("tamSegmento: %x\n", tamSegmento);
         if(tamSegmento > 0){
             if(baseSegmento + tamSegmento > mv->tamMemoria){
                 printf("Memoria insuficiente");
@@ -53,31 +54,35 @@ void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
             }
             mv->tablaSegmentos[segmento] = combinarHighLow(baseSegmento, tamSegmento);
             mv->registros[CS+i] = combinarHighLow(segmento, 0);
-            printf("contenido registro: %x \n", mv->registros[CS+i]);
+            //printf("contenido registro: %x \n", mv->registros[CS+i]);
             segmento++;
             baseSegmento += tamSegmento;
         }else{
             mv->registros[CS+i] = -1;
         }
 
+        //los lugares de la tabla no usados se llenan de 1
+        for(int j = segmento; j < CANT_SEGMENTOS; j++)
+            mv->tablaSegmentos[j] = -1;
+
     }
-    for(int i = 0; i < CANT_SEGMENTOS; i++){
-        printf("Tabla %d: %x, %x\n", i, obtenerHigh(mv->tablaSegmentos[i]), obtenerLow(mv->tablaSegmentos[i]));
-        printf("Registro: %x\n", mv->registros[CS+i]);
-    }
-    printf("tamanio de los 5 leido bien\n");
+    //for(int i = 0; i < CANT_SEGMENTOS; i++){
+        //printf("Tabla %d: %x, %x\n", i, obtenerHigh(mv->tablaSegmentos[i]), obtenerLow(mv->tablaSegmentos[i]));
+        //printf("Registro: %x\n", mv->registros[CS+i]);
+    //}
+    //printf("tamanio de los 5 leido bien\n");
 
     if(mv->registros[SS] > 0){
         int tamPila = obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[SS])]);
         mv->registros[SP] = mv->registros[SS] + tamPila;
     }
-    printf("fin cargar SP\n");
+    //printf("fin cargar SP\n");
 
     fread(lectura, 1, 2, arch);
     entryPoint = (lectura[0] << 8) + lectura[1];
     mv->registros[IP] = mv->registros[CS] + entryPoint;
-    printf("fin inicializacion\n");
-    printf("Ip (entrypoint):%x\n", mv->registros[IP]);
+    //printf("fin inicializacion\n");
+    //printf("Ip (entrypoint):%x\n", mv->registros[IP]);
 }
 
 
@@ -86,10 +91,10 @@ void cargarCS(Tmv* mv, FILE* arch){
     int tamCS = obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]);
     //TODO fijarse si anda
     fread(mv->memoria + posMemoria, 1, tamCS, arch);
-    printf("Leido el codigo: tamCS: %x\n", obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]));
-    for(int i = 0; i < obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]); i++){
-        printf("%x ", (unsigned char)mv->memoria[posMemoria+i]);
-    }
+    //printf("Leido el codigo: tamCS: %x\n", obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]));
+    //for(int i = 0; i < obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]); i++){
+    //    printf("%x ", (unsigned char)mv->memoria[posMemoria+i]);
+    //}
 }
 
 
@@ -100,33 +105,33 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
 
     arch = fopen(mv->fileNameVmx, "rb");
 
-    printf("Se abrio el archivo\n");
+    //printf("Se abrio el archivo\n");
 
     if (arch != NULL)
     {
-        printf("Se abrio el vmx\n");
+        //printf("Se abrio el vmx\n");
         //leo cabecera
         fread(cabecera, sizeof(unsigned char), TAM_IDENTIFICADOR, arch);
         cabecera[5] = '\0';
 
-        printf("Cabecera: %s\n", cabecera);
+        //printf("Cabecera: %s\n", cabecera);
 
         //me fijo si el archivo es valido por la cabecera
         if (strcmp(cabecera, "VMX25") == 0)
         {
-            printf("Leida cabezera vmx25 \n");
+            //printf("Leida cabezera vmx25 \n");
             //leo version y tamano del codigo
             fread(&version, 1, 1, arch);
-            printf("Version: %d\n", version);
+            //printf("Version: %d\n", version);
             switch(version){
                 case 1:{
-                    printf("version 1 \n");
+                    //printf("version 1 \n");
                     inicializarTablaRegistrosVersion1(mv, arch);
                     mv->version = 1;
                     break;
                 }
                 case 2:{
-                    printf("Entro a version 2\n");
+                    //printf("Entro a version 2\n");
                     inicializarTablaRegistrosVersion2(mv, arch, tamPS);
                     mv->version = 2;
                     break;
