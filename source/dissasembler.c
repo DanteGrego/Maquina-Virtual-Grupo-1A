@@ -4,7 +4,7 @@
 void impKS(Tmv* mv){
     if (mv->registros[KS] != -1){
 
-        int aux = obtenerHigh(mv->registros[KS]);
+        int aux  = obtenerHigh(mv->registros[KS]);
         int base = obtenerHigh(mv->tablaSegmentos[aux]); 
         int tam  = obtenerLow (mv->tablaSegmentos[aux]);
         int i = base;
@@ -12,50 +12,48 @@ void impKS(Tmv* mv){
         const int ancho_tab = 32; // mismo ancho que disassembler
 
         while (i < base + tam){
-            int dir = base + i;
-            int n = 0;
-            char cadena[9];  // 6 caracteres + ".." + '\0'
-            unsigned char car;
+            if (mv->memoria[i] == '\0') { i++; continue; }
 
-            // ---- parte izquierda: dirección ----
-            printf(" [%04X] ", dir);
+            int inicio = i;   // guardo inicio de la palabra
+            int n = 0;       // largo de la palabra (en chars)
 
-            while (mv->memoria[i] != '\0' && n < 7){
-                car = (unsigned char)mv->memoria[i];
-                printf("%02X ", car);
+            // ---- IZQUIERDA: dirección ----
+            int col = 0;
+            col += printf(" [%04X] ", i);
 
-                if (car < 32 || car > 126)
-                    cadena[n] = '.';
-                else
-                    cadena[n] = (char)car;
+            // ---- recorro palabra completa para contar n y mostrar hasta 6 bytes en hex ----
+            while (i < base + tam && mv->memoria[i] != '\0'){
+                unsigned char car = (unsigned char)mv->memoria[i];
 
+                if (n < 6) {
+                    col += printf("%02X ", car);
+                } else if (n == 6) {
+                    col += printf("..");   // hay más de 6 bytes -> trunc en la izquierda
+                }
                 n++;
                 i++;
             }
 
-            // ---- truncado si excede ----
-            if (n >= 6){
-                cadena[6] = '.';
-                cadena[7] = '.';
-                cadena[8] = '\0';
-            } else {
-                cadena[n] = '\0';
-            }
-
-            // ---- cálculo de alineación ----
-            // 8 caracteres por byte (2 hex + espacio aprox) + dirección (7) ≈ 32 ancho total
-            int espacios = ancho_tab - (7 + (n * 3));
+            // ---- alineación de la barra usando lo impreso a la izquierda ----
+            int espacios = ancho_tab - col;
             if (espacios < 1) espacios = 1;
+            while (espacios--) printf(" ");
 
-            // ---- parte derecha alineada ----
-            for (int k = 0; k < espacios; k++) printf(" ");
-            printf("| \"%s\"\n", cadena);
+            // ---- DERECHA: palabra completa (todos los n chars) ----
+            printf(" | \"");
+            for (int j = 0; j < n; j++){
+                unsigned char c = (unsigned char)mv->memoria[inicio + j];
+                putchar((c >= 32 && c <= 126) ? (char)c : '.');
+            }
+            printf("\"\n");
 
-            // ---- saltar '\0' si terminó ----
-            if (mv->memoria[i] == '\0') i++;
+            // ---- saltar '\0' si existe ----
+            if (i < base + tam && mv->memoria[i] == '\0') i++;
         }
     }
 }
+
+
 
 void impNombreOperando(Tmv* mv, int ip, int tipo) {
     const int ancho = 18;
