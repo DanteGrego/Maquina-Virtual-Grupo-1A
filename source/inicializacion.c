@@ -37,7 +37,8 @@ void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS){
         mv->registros[PS] = 0x00000000;
         segmento++;
         baseSegmento += tamPS;
-    }
+    }else
+        mv->registros[PS] = -1;
 
     for(int i = 0; i < 5; i++){//leo el tamanio de 5 segmentos
         fread(lectura, 1, 2, arch);
@@ -97,6 +98,14 @@ void cargarCS(Tmv* mv, FILE* arch){
     //}
 }
 
+void cargarKS(Tmv* mv, FILE* arch){
+    int tablaKS = mv->tablaSegmentos[obtenerHigh(mv->registros[KS])];
+    int baseKS = obtenerHigh(tablaKS);
+    int tamKS = obtenerLow(tablaKS);
+
+    fread(mv->memoria+baseKS, 1, tamKS, arch);
+}
+
 
 void leerArchivoVmx(Tmv *mv, int tamPS)
 {
@@ -144,6 +153,9 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
             }
             //se supone que se sale con el archivo ya leida la cabecera
             cargarCS(mv, arch);
+
+            if(mv->version == 2)
+                cargarKS(mv, arch);
             
             fclose(arch);
         }
