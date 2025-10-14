@@ -12,7 +12,7 @@ void impKS(Tmv* mv){
         const int ancho_tab = 32; // mismo ancho que disassembler
 
         while (i < base + tam){
-            int dir = base + i;
+            int dir = i;
             int n = 0;
             char cadena[9];  // 6 caracteres + ".." + '\0'
             unsigned char car;

@@ -1,6 +1,7 @@
 TEXTO1 equ "Hola mundo\n"
 
-main:   push bp
+main:   sys 0xf
+        push bp
         mov bp, sp
         push edx
         mov edx, KS
