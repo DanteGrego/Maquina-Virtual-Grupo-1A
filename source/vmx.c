@@ -101,10 +101,10 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             else{
                 leerArchivoVmi(&mv);
             }
-/*
+
         if (imprimoDesensamblado == 1)
             disassembler(&mv);
-*/
+
 
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         int debugi = 0;
