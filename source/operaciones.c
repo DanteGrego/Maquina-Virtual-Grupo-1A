@@ -260,7 +260,7 @@ void POP(Tmv *mv, int op){
     int tamSegmentoS = obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[SS])]);
     int offsetSP = obtenerLow(mv->registros[SP]);
 
-    if (offsetSP+4 >= tamSegmentoS){
+    if (offsetSP+4 >= tamSegmentoS){//TODO: si es igual al tamanio la informacion entra?
         printf("Error: Stack Underflow");
         exit(-1);
     }

@@ -79,7 +79,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                 leerArchivoVmx(&mv, tamPS);
 
                 //printf("Se leyo el archivo vmx \n");
-                if(mv.version == 2){
+                if(mv.registros[SS] >= 0){
                     if(tamPS == 0)
                         posArgv = -1;
                     //printf("SP0: %x\n", mv.registros[SP]);

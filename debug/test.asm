@@ -8,7 +8,6 @@ main:   sys 0xf
         add edx, TEXTO1
         sys 0x4
         pop edx
-        sys 0xf
         mov sp, bp
         pop bp
         ret

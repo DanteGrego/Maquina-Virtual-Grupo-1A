@@ -51,7 +51,6 @@ typedef struct Tmv{
     int registros[CANT_REGISTROS];
     int tablaSegmentos[CANT_SEGMENTOS];
     char modoDebug;//0: normal, '1': debug
-    char version;
 }Tmv;
 
 extern const char* nombreRegistros[];
@@ -74,8 +73,8 @@ char* getExtension(char* cadena);
 void cargoTamMemoria(Tmv* mv, char* argumento);
 void cargarCS(Tmv* mv, FILE* arch);
 void cargarTodoMv(Tmv* mv, FILE* arch);
-void inicializarTablaRegistrosVersion1(Tmv* mv, FILE* arch);
-void inicializarTablaRegistrosVersion2(Tmv* mv, FILE* arch, int tamPS);
+void registrarSegmento(Tmv* mv, int* baseSegmento, int tamSegmento, int* indiceTabla, int segmento);
+void inicializarTablaRegistros(Tmv* mv, FILE* arch, int tamPS);
 void leerArchivoVmx(Tmv *mv, int tamPS);
 void leerArchivoVmi(Tmv* mv);
 
