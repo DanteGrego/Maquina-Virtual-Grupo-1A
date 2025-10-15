@@ -1,4 +1,4 @@
-TEXTO1 equ "Hola mundo\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+TEXTO1 equ "Hola mundo\n"
 
         mov bp, sp
         push edx
