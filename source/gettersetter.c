@@ -63,7 +63,7 @@ int getValor(Tmv *mv, int bytes) // sin testear/incompleto
 
     case 3:
     { // memoria
-        char tamMemoria = 4 - ((bytes & 0x00C00000) >> 18);
+        char tamMemoria = 4 - ((bytes >> 22) & 0b11);
         bytes &= 0x001FFFFF;
         char registro = bytes >> 16;
         int segmento = obtenerHigh(mv->registros[registro]);
@@ -203,11 +203,11 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
     }
     case 3:
     { // memoria
-        char tamMemoria = 4 - ((operando & 0x00C00000) >> 18);
+        char tamMemoria = 4 - ((operando >> 22) & 0b11);
         operando &= 0x001FFFFF;
         char registro = operando >> 16;
         int segmento = obtenerHigh(mv->registros[registro]);
-        escribirMemoria(mv, obtenerDirLogica(mv, operando), 4, valor, segmento);
+        escribirMemoria(mv, obtenerDirLogica(mv, operando), tamMemoria, valor, segmento);
         break;
     }
     }
