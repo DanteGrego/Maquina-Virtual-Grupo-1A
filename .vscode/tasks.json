@@ -18,6 +18,7 @@
 				"-o",
 				"${workspaceFolder}/debug/vmx.exe"
 			],
+			//C:/Users/demil/OneDrive/Escritorio/Facultad/2do/arqui/tp5/vmx.exe
 			"options": {
 				"cwd": "${workspaceFolder}/source"
 			},
@@ -42,7 +43,11 @@
 			"args": [
 				"${workspaceFolder}/debug/test.vmx",
 				"${workspaceFolder}/debug/test.vmi",
-				"-d"
+				"-d",
+				"-p",
+				"hola",
+				"como",
+				"estas"
 			],
 			"group": "test",
 			"presentation": {

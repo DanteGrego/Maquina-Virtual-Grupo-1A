@@ -45,6 +45,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             if (mv.fileNameVmx != NULL){    // si hay vmx ->
                 //printf("hay archivo vmx \n");
                 //printf("nombre del archivo: %s \n", mv.fileNameVmx);
+                i++;//salteo argumento -p
                 int *vectorPunteros = (int*) malloc(sizeof(int)*(numeroArgumentos-i));
                 mv.memoria = (char*) malloc(mv.tamMemoria);
                 int tamPS = 0;
@@ -55,8 +56,8 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     vectorPunteros[k++] = tamPS;
                     //printf("argumento del param segment %d %s \n",k,vectorArgumentos[i]);
                     do{
-                        if (tamPS >= mv.tamMemoria){
-                            //printf("Excedido tamanio de memoria");
+                        if (tamPS > mv.tamMemoria){
+                            printf("Excedido tamanio de memoria");
                             exit(-1);
                         }
                         mv.memoria[tamPS] = vectorArgumentos[i][j];
@@ -67,12 +68,17 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                 posArgv = tamPS;
                 //printf("fin lectura del ps, tamanio: %d cantidad parametros: %d\n",tamPS, k);
                 for (int w = 0; w < k; w++){//cargo punteros a los parametros en el param segment
-                    if (tamPS + 4 >= mv.tamMemoria){
-                            //printf("Excedido tamanio de memoria");
+                    if (tamPS + 4 > mv.tamMemoria){
+                            printf("Excedido tamanio de memoria");
                             exit(-1);
                     }
-                    for(int x = 0; x < 4; x++)
-                        mv.memoria[tamPS+x] = (vectorPunteros[w] >> 8 * (3 - x)) && 0x000000FF;
+                    
+                    int puntero = vectorPunteros[w];
+                    for(int x = 0; x < 4; x++){
+                        mv.memoria[tamPS+x] = (puntero >> 24) & 0x000000FF;
+                        puntero <<= 8;
+                    }
+                    tamPS += 4;
                 }
                 //printf("salio del for de parametros \n");
 
@@ -109,11 +115,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         int debugi = 0;
         while(seguirEjecutando(&mv)){
-            //printf("debug i: %d ",debugi++);
-            leerInstruccion(&mv);
-            //printf("  se leyo inst OPC: %d", mv.registros[OPC]);
-            ejecutarInstruccion(&mv);
-            //printf("  se ejecuto inst: IP: %d\n",mv.registros[IP]);
             if(mv.modoDebug){
                 scanf("%c", &ingresoDebug);
                 switch(ingresoDebug){
@@ -131,6 +132,11 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     }
                 }
             }
+            //printf("debug i: %d ",debugi++);
+            leerInstruccion(&mv);
+            //printf("  se leyo inst OPC: %d", mv.registros[OPC]);
+            ejecutarInstruccion(&mv);
+            //printf("  se ejecuto inst: IP: %d\n",mv.registros[IP]);
         }
     }
 
