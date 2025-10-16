@@ -25,11 +25,12 @@ void registrarSegmento(Tmv* mv, int* baseSegmento, int tamSegmento, int* indiceT
         (*indiceTabla)++;
     }else
         mv->registros[segmento] = -1;
+    //printf("tamSegmento: %d, segmento: %d, indiceTabla: %d\n", tamSegmento, segmento, indiceTabla);
 }
 
 void inicializarTablaRegistros(Tmv* mv, FILE* arch, int tamPS){
     int tamSegmentos[CANT_SEGMENTOS], baseSegmento, cantSegmentosLeidos, indiceTabla, entryPoint;
-    char lecturaTams[CANT_SEGMENTOS][2], version;
+    unsigned char lecturaTams[CANT_SEGMENTOS][2], version;
 
     baseSegmento = 0;
     indiceTabla = 0;
