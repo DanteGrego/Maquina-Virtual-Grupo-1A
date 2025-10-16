@@ -17,7 +17,6 @@ void actualizarCC(Tmv *mv, int valor){
 
 //op1 = op2
 void MOV (Tmv *mv, int op1, int op2){
-    printf("mov ejecutao\n");
     int valor = getValor(mv, op2);
     setValor(mv, op1, valor);
 }
