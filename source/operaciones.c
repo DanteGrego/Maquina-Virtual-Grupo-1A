@@ -188,7 +188,7 @@ int isZ(Tmv* mv){
 //salto siempre a la direccion
 void JMP(Tmv *mv, int direccion){
     int valor = getValor(mv, direccion);
-    mv->registros[IP] = valor;
+    mv->registros[IP] = mv->registros[CS] + valor;
 }
 
 //salto si esta z
