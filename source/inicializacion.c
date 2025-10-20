@@ -2,13 +2,15 @@
 
 void cargoTamMemoria(Tmv* mv, char* argumento){
     int tamMemoria = 0;
-    int i = 0;
+    int i = 2;//salteo "m="
 
     while(argumento[i] != '\0'){
         tamMemoria *= 10;
         tamMemoria += argumento[i] - '0';
         i++;
     }
+
+    tamMemoria *= 1024;//M esta en KiB
 
     mv->tamMemoria = tamMemoria;
 }
@@ -67,8 +69,11 @@ void inicializarTablaRegistros(Tmv* mv, FILE* arch, int tamPS){
         registrarSegmento(mv, &baseSegmento, tamSegmentos[i], &indiceTabla, CS+i);
 
     entryPoint = 0;
-    if(version == 1)
+    if(version == 1){
         registrarSegmento(mv, &baseSegmento, TAM_MEMORIA - baseSegmento, &indiceTabla, DS);
+        for(int i = ES; i <= PS; i++)
+            mv->registros[i] = -1;
+    }
     else if(version == 2){
         unsigned char entryPointLeido[2];
         fread(entryPointLeido, 1, 2, arch);
@@ -195,11 +200,29 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
     }
 }
 
+int bytes4AInt(unsigned char bytes[4]){
+    int res = 0;
+    for(int i = 0; i < 4; i++)
+        res += bytes[i] << (3-i) * 8;
+    return res;
+}
+
 void cargarTodoMv(Tmv* mv, FILE* arch){
-    fread(&mv->tamMemoria, 2, 1, arch);
+    unsigned char lecturaTams[4];
+    fread(lecturaTams, 1, 2, arch);
+    mv->tamMemoria = lecturaTams[0] << 8 + lecturaTams[1];
     mv->memoria = (char*) malloc(mv->tamMemoria);
-    fread(mv->registros, 4, 32, arch);
-    fread(mv->tablaSegmentos, 4, 8, arch);
+
+    for(int i = 0; i < CANT_REGISTROS; i++){
+        fread(lecturaTams, 1, 4, arch);
+        mv->registros[i] = bytes4AInt(lecturaTams);
+    }
+
+    for(int i = 0; i < CANT_SEGMENTOS; i++){
+        fread(lecturaTams, 1, 4, arch);
+        mv->tablaSegmentos[i] = bytes4AInt(lecturaTams);
+    }
+   
     fread(mv->memoria, 1, mv->tamMemoria, arch);
 }
 
