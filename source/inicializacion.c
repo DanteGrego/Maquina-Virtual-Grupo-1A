@@ -205,23 +205,23 @@ void cargarTodoMv(Tmv* mv, FILE* arch){
 
 
 void leerArchivoVmi(Tmv* mv){
-    unsigned char cabecera[5], version;
+    unsigned char cabecera[6], version;
     FILE *arch;
-    arch = fopen(mv->fileNameVmx, "rb");
+    arch = fopen(mv->fileNameVmi, "rb");
 
     if (arch != NULL)
     {
         //leo cabecera
         fread(cabecera, sizeof(unsigned char), TAM_IDENTIFICADOR, arch);
-
         //me fijo si el archivo es valido por la cabecera
         if (strcmp(cabecera, "VMI25") == 0)
         {
             //leo version y tamano del codigo
-            fread(&version, sizeof(unsigned char), 1, arch);
+            fread(&version, 1, 1, arch);
             switch(version){
                 case 1:{
                     cargarTodoMv(mv, arch);
+                    break;
                 }
                 default:{
                     printf("Version invalida");

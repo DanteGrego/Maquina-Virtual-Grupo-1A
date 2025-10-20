@@ -163,6 +163,10 @@ void SYS(Tmv* mv, int operando){
             sysStringWrite(mv);
             break;
         }
+        case 7:{
+            system("cls");
+            break;
+        }
         case 0xF:{
             sysBreakpoint(mv);
             break;
