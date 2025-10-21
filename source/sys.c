@@ -228,7 +228,7 @@ void sysStringRead(Tmv* mv){
     int caracteresMaximo = obtenerLow(mv->registros[ECX]);//CX
     int posActual = mv->registros[EDX];
     int segmento = obtenerHigh(mv->registros[EDX]);
-    char* stringLeido;
+    char stringLeido[1024];
 
     scanf("%s", stringLeido);
 
@@ -238,7 +238,6 @@ void sysStringRead(Tmv* mv){
         escribirMemoria(mv, posActual + i, 1, stringLeido[i], segmento);
         i++;
     }
-
     escribirMemoria(mv, posActual + i, 1, '\0', segmento);
 }
 
