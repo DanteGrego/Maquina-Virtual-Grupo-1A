@@ -115,11 +115,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         while(seguirEjecutando(&mv)){
-            //printf("debug i: %d ",debugi++);
-            leerInstruccion(&mv);
-            //printf("  se leyo inst OPC: %d", mv.registros[OPC]);
-            ejecutarInstruccion(&mv);
-            //printf("  se ejecuto inst: IP: %d\n",mv.registros[IP]);
             if(mv.modoDebug){
                 scanf("%c", &ingresoDebug);
                 switch(ingresoDebug){
@@ -137,6 +132,11 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     }
                 }
             }
+            //printf("debug i: %d ",debugi++);
+            leerInstruccion(&mv);
+            //printf("  se leyo inst OPC: %d", mv.registros[OPC]);
+            ejecutarInstruccion(&mv);
+            //printf("  se ejecuto inst: IP: %d\n",mv.registros[IP]);   
         }
     }
 
