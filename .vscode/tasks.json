@@ -16,8 +16,9 @@
 				"sys.c",
 				"inicializacion.c",
 				"-o",
-				"${workspaceFolder}/debug/vmx.exe"
+				"C:/Users/demil/OneDrive/Escritorio/Facultad/2do/arqui/tp5/vmx.exe"
 			],
+			//${workspaceFolder}/debug/vmx.exe
 			//C:/Users/demil/OneDrive/Escritorio/Facultad/2do/arqui/tp5/vmx.exe
 			"options": {
 				"cwd": "${workspaceFolder}/source"

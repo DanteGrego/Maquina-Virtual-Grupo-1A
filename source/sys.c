@@ -232,7 +232,7 @@ void sysStringRead(Tmv* mv){
     int segmento = obtenerHigh(mv->registros[EDX]);
     char stringLeido[1024];
 
-    scanf("%s", stringLeido);
+    scanf("%[^\n]s", stringLeido);
 
     int i = 0;
 
