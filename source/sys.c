@@ -187,8 +187,10 @@ void generarArchivoImagen(Tmv* mv){
         //header
         char identificador[] = "VMI25";
         fwrite(identificador, 1, 5, arch);
+
         char version = 1;
         fwrite(&version, 1, 1, arch);
+        
         char tamMemoria[] = {(mv->tamMemoria & 0x0000FF00) >> 8, mv->tamMemoria & 0x000000FF};
         fwrite(tamMemoria, 1, 2, arch);
 
