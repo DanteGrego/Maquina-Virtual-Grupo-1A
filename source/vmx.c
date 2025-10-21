@@ -114,7 +114,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 
 
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
-        int debugi = 0;
         while(seguirEjecutando(&mv)){
             //printf("debug i: %d ",debugi++);
             leerInstruccion(&mv);

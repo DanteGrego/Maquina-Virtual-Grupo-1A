@@ -168,7 +168,7 @@ void SYS(Tmv* mv, int operando){
             break;
         }
         case 0xF:{
-            sysBreakpoint(mv);
+            mv->modoDebug = 1;
             break;
         }
         default:{
@@ -222,7 +222,6 @@ void generarArchivoImagen(Tmv* mv){
 void sysBreakpoint(Tmv* mv){
     if(mv->fileNameVmi != NULL){
         generarArchivoImagen(mv);
-        mv->modoDebug = 1;
     }
 }
 
@@ -240,6 +239,7 @@ void sysStringRead(Tmv* mv){
         escribirMemoria(mv, posActual + i, 1, stringLeido[i], segmento);
         i++;
     }
+
     escribirMemoria(mv, posActual + i, 1, '\0', segmento);
 }
 
