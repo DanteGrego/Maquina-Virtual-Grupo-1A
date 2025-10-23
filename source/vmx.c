@@ -127,7 +127,8 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                         break;
                     }
                     default:{
-                        sysBreakpoint(&mv);//sigue ejecucion paso a paso con un breakpoint en cada uno
+                        if(mv.modoDebug == 1) sysBreakpoint(&mv);//sigue ejecucion paso a paso con un breakpoint en cada uno
+                        else mv.modoDebug = 1;
                         break;
                     }
                 }

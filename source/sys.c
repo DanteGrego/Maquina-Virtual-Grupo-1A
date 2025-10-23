@@ -168,7 +168,8 @@ void SYS(Tmv* mv, int operando){
             break;
         }
         case 0xF:{
-            mv->modoDebug = 1;
+            sysBreakpoint(mv);
+            mv->modoDebug = 2;//marca que en el siguiente scanf no debe hacer breakpoint (haria dos veces sobre el mismo paso)
             break;
         }
         default:{
