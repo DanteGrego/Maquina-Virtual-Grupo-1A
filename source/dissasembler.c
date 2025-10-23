@@ -34,6 +34,9 @@ void impKS(Tmv* mv){
                 i++;
             }
 
+            if (n == 6 && mv->memoria[i] == '\0')
+                printf("%02X ", (unsigned char)mv->memoria[i]);
+
             // ---- alineación de la barra usando lo impreso a la izquierda ----
             int espacios = ancho_tab - col;
             if (espacios < 1) espacios = 1;
