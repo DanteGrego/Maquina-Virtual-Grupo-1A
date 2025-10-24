@@ -3,16 +3,14 @@
 
 void impKS(Tmv* mv){
     if (mv->registros[KS] != -1){
-
         int aux  = obtenerHigh(mv->registros[KS]);
         int base = obtenerHigh(mv->tablaSegmentos[aux]); 
         int tam  = obtenerLow (mv->tablaSegmentos[aux]);
         int i = base;
-
         const int ancho_tab = 32; // mismo ancho que disassembler
 
         while (i < base + tam){
-            if (mv->memoria[i] == '\0') { i++; continue; }
+           
 
             int inicio = i;   // guardo inicio de la palabra
             int n = 0;       // largo de la palabra (en chars)
@@ -33,6 +31,9 @@ void impKS(Tmv* mv){
                 n++;
                 i++;
             }
+
+            if (n <= 6 && mv->memoria[i] == '\0')
+                col += printf("%02X ", (unsigned char)mv->memoria[i]);
 
             // ---- alineación de la barra usando lo impreso a la izquierda ----
             int espacios = ancho_tab - col;
