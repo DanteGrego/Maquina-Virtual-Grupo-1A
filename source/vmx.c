@@ -8,7 +8,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     mv.tamMemoria = TAM_MEMORIA;        // se inicializa en 16Kib
 
     char imprimoDesensamblado = 0; // condicion booleana que decide mostrar el codigo desensamblado
-    char ingresoDebug;
+    char ingresoDebug[256];
     //printf("entro al main \n");
 
     if (numeroArgumentos < 2)
@@ -116,21 +116,18 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
         mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
         while(seguirEjecutando(&mv)){
             if(mv.modoDebug){
-                scanf("%c", &ingresoDebug);
-                switch(ingresoDebug){
+                sysBreakpoint(&mv);
+                switch(getchar()){
                     case 'g':{
                         mv.modoDebug = 0;//sigue con la ejecucion hasta el proximo breakpoint o hasta terminar
+                        limpiarBuffers();
                         break;
                     }
                     case 'q':{
                         exit(0);//termina la ejecucion
                         break;
                     }
-                    default:{
-                        if(mv.modoDebug == 1) sysBreakpoint(&mv);//sigue ejecucion paso a paso con un breakpoint en cada uno
-                        else mv.modoDebug = 1;
-                        break;
-                    }
+                    case '\n':break;
                 }
             }
             //printf("debug i: %d ",debugi++);

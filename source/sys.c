@@ -168,8 +168,7 @@ void SYS(Tmv* mv, int operando){
             break;
         }
         case 0xF:{
-            sysBreakpoint(mv);
-            mv->modoDebug = 2;//marca que en el siguiente scanf no debe hacer breakpoint (haria dos veces sobre el mismo paso)
+            mv->modoDebug = 1;
             break;
         }
         default:{
@@ -233,6 +232,7 @@ void sysStringRead(Tmv* mv){
     char stringLeido[1024];
 
     scanf("%[^\n]s", stringLeido);
+    limpiarBuffers();
 
     int i = 0;
 
