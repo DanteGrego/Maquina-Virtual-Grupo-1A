@@ -2,6 +2,14 @@
 
 
 void impKS(Tmv* mv){
+    if(mv->tablaSegmentos){
+
+    }
+}
+
+
+
+void impKS(Tmv* mv){
     if (mv->registros[KS] != -1){
         int aux  = obtenerHigh(mv->registros[KS]);
         int base = obtenerHigh(mv->tablaSegmentos[aux]); 
@@ -126,6 +134,9 @@ void disassembler(Tmv* mv) {
     const int ancho_tab = 32;
 
     //imprime K segment si existe
+
+
+    //imprime K segment si existe
     impKS(mv);
 
     while (ip < tam + base) {
@@ -143,8 +154,16 @@ void disassembler(Tmv* mv) {
             printf(" ");
 
 
+
+        if (ip == entryPoint)
+            printf(">");
+        else
+            printf(" ");
+
+
         int largo = snprintf(izq, sizeof(izq), "[%04X] %02X ", base + ip, ins);
 
+        if (opc == 0x0F || opc == 0x0E) { // STOP o RET
         if (opc == 0x0F || opc == 0x0E) { // STOP o RET
             int espacios = ancho_tab - largo;
             if (espacios < 1) espacios = 1;
@@ -153,7 +172,13 @@ void disassembler(Tmv* mv) {
                 printf("%s%*s| STOP\n", izq, espacios, "");
             else
                 printf("%s%*s| RET\n", izq, espacios, "");
+
+            if (opc == 0x0F)
+                printf("%s%*s| STOP\n", izq, espacios, "");
+            else
+                printf("%s%*s| RET\n", izq, espacios, "");
             ip += 1;
+        } else if (opc <= 0x08 || (opc >= 0x0B && opc <= 0x0D)) { // 1 operando
         } else if (opc <= 0x08 || (opc >= 0x0B && opc <= 0x0D)) { // 1 operando
             // swap
             top1 = top2;
