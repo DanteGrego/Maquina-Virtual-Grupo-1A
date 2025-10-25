@@ -8,8 +8,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     mv.tamMemoria = TAM_MEMORIA;        // se inicializa en 16Kib
 
     char imprimoDesensamblado = 0; // condicion booleana que decide mostrar el codigo desensamblado
-    char ingresoDebug[256];
-    //printf("entro al main \n");
 
     if (numeroArgumentos < 2)
     {
@@ -18,12 +16,10 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
     }
     else
     {
-        //printf("numero de argumentos: %d \n", numeroArgumentos);
         int i = 1;
         char argumentoActual[500];
         char extensionArchivo[500];
         while (i < numeroArgumentos && strcmp(vectorArgumentos[i],"-p") != 0){
-            //printf("argumento actual: %s \n", vectorArgumentos[i]);
             strcpy(argumentoActual, vectorArgumentos[i]);
             strcpy(extensionArchivo, getExtension(argumentoActual));
             if (strcmp(extensionArchivo, ".vmx") == 0)
@@ -31,7 +27,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             else if (strcmp(extensionArchivo, ".vmi") == 0)
                 mv.fileNameVmi = vectorArgumentos[i];
             else if (argumentoActual[0] == 'm' && argumentoActual[1] == '=')
-                cargoTamMemoria(&mv, argumentoActual); // aca se carga mv.tamMemoria, si nunca entra ya se inicializo en 16Kib
+                cargoTamMemoria(&mv, argumentoActual);
             else if (argumentoActual[0] == '-' && argumentoActual[1] == 'd')
                 imprimoDesensamblado = 1;
             i++;
@@ -43,8 +39,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
         }
         else
             if (mv.fileNameVmx != NULL){    // si hay vmx ->
-                //printf("hay archivo vmx \n");
-                //printf("nombre del archivo: %s \n", mv.fileNameVmx);
                 i++;//salteo argumento -p
                 int *vectorPunteros = (int*) malloc(sizeof(int)*(numeroArgumentos-i));
                 mv.memoria = (char*) malloc(mv.tamMemoria);
@@ -54,7 +48,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                 while (i < numeroArgumentos){ // cargo los parametros en el param segment y obtengo su tamaño
                     int j = 0;
                     vectorPunteros[k++] = tamPS;
-                    //printf("argumento del param segment %d %s \n",k,vectorArgumentos[i]);
                     do{
                         if (tamPS > mv.tamMemoria){
                             printf("Excedido tamanio de memoria");
@@ -66,7 +59,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     i++;
                 }
                 posArgv = tamPS;
-                //printf("fin lectura del ps, tamanio: %d cantidad parametros: %d\n",tamPS, k);
+    
                 for (int w = 0; w < k; w++){//cargo punteros a los parametros en el param segment
                     if (tamPS + 4 > mv.tamMemoria){
                             printf("Excedido tamanio de memoria");
@@ -80,29 +73,21 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     }
                     tamPS += 4;
                 }
-                //printf("salio del for de parametros \n");
 
                 leerArchivoVmx(&mv, tamPS);
 
 
-                //printf("Se leyo el archivo vmx \n");
                 if(mv.registros[SS] >= 0){
                     if(tamPS == 0)
                         posArgv = -1;
-                    //printf("SP0: %x\n", mv.registros[SP]);
                     mv.registros[SP] -= 4;
-                    //printf("SS: %x\n", mv.registros[SS]);
                     escribirMemoria(&mv, mv.registros[SP], 4, posArgv, obtenerHigh(mv.registros[SS]));
-                    //printf("SP: %x\n", mv.registros[SP]);
-                    //printf("Se escribio SSargv: %x\n", mv.memoria[obtenerDirFisica(&mv, mv.registros[SP])]);
+                    
                     mv.registros[SP] -= 4;
                     escribirMemoria(&mv, mv.registros[SP], 4, k, obtenerHigh(mv.registros[SS]));//escribo argc
-                    //printf("SP: %x\n", mv.registros[SP]);
-                    //printf("Se escribio SSargc: %x\n", mv.memoria[obtenerDirFisica(&mv, mv.registros[SP])]);
+                    
                     mv.registros[SP] -= 4;
                     escribirMemoria(&mv, mv.registros[SP], 4, -1, obtenerHigh(mv.registros[SS]));//escribo ret del main
-                    //printf("SP: %x\n", mv.registros[SP]);
-                    //printf("Se escribio SSret: %x\n", mv.memoria[obtenerDirFisica(&mv, mv.registros[SP])]);
                 }
             }
             else{
@@ -130,11 +115,8 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     case '\n':break;
                 }
             }
-            //printf("debug i: %d ",debugi++);
             leerInstruccion(&mv);
-            //printf("  se leyo inst OPC: %d", mv.registros[OPC]);
-            ejecutarInstruccion(&mv);
-            //printf("  se ejecuto inst: IP: %d\n",mv.registros[IP]);   
+            ejecutarInstruccion(&mv);  
         }
     }
 
@@ -201,9 +183,7 @@ void leerInstruccion(Tmv *mv)
     //obtengo operandos con mascaras y shifteos
     char top2 = (instruccion >> 6) & 0x03;
     char top1 = (instruccion >> 4) & 0x03;
-    //printf("Operandos %d %d\n",top1,top2);
     char opc = instruccion & 0x1F;
-    //printf("Instruccion %x\n",instruccion);
 
     posFisInstruccion++; // me pongo en posicion para leer op2
     int valOp2 = leerValMemoria(mv, top2, posFisInstruccion);
@@ -223,7 +203,6 @@ void leerInstruccion(Tmv *mv)
     mv->registros[OP1] = ((int)top1 << 24) | (valOp1 & 0x00FFFFFF); // masqueado por si era negativo, sino me tapa el top en el primer byte
     mv->registros[OP2] = ((int)top2 << 24) | (valOp2 & 0x00FFFFFF);
     mv->registros[IP] += 1 + top1 + top2;
-    //printf("OP1: %x\nOP2: %x\nOPC: %x\nIP: %x\n", mv->registros[OP1], mv->registros[OP2], mv->registros[OPC], mv->registros[IP]);
 }
 
 //busco con el OPC que funcion es y la llamo con OP1 y OP2 cargados

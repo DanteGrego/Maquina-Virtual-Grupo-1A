@@ -90,24 +90,12 @@ void inicializarTablaRegistros(Tmv* mv, FILE* arch, int tamPS){
         int tamPila = obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[SS])]);
         mv->registros[SP] = mv->registros[SS] + tamPila;
     }
-
-    /*
-    for(int i = 0; i < CANT_SEGMENTOS; i++){
-        printf("Tabla %d: %x, %x\n", i, obtenerHigh(mv->tablaSegmentos[i]), obtenerLow(mv->tablaSegmentos[i]));
-        printf("Registro: %x\n", mv->registros[CS+i]);
-    }
-    */
 }
 
 void cargarCS(Tmv* mv, FILE* arch){
     int posMemoria = obtenerDirFisica(mv, mv->registros[CS]);
     int tamCS = obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]);
-    //TODO fijarse si anda
     fread(mv->memoria + posMemoria, 1, tamCS, arch);
-    //printf("Leido el codigo: tamCS: %x\n", obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]));
-    //for(int i = 0; i < obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[CS])]); i++){
-    //    printf("%x: %x \n", posMemoria+i, (unsigned char)mv->memoria[posMemoria+i]);
-    //}
 }
 
 void cargarKS(Tmv* mv, FILE* arch){
@@ -116,13 +104,6 @@ void cargarKS(Tmv* mv, FILE* arch){
     int tamKS = obtenerLow(tablaKS);
 
     fread(mv->memoria+baseKS, 1, tamKS, arch);
-
-    /*
-    printf("Leido el const: tamKS: %x\n", obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[KS])]));
-    for(int i = 0; i < obtenerLow(mv->tablaSegmentos[obtenerHigh(mv->registros[KS])]); i++){
-        printf("%x: %x \n", baseKS+i, (unsigned char)mv->memoria[baseKS+i]);
-    }
-    */
 }
 
 
@@ -133,16 +114,11 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
 
     arch = fopen(mv->fileNameVmx, "rb");
 
-    //printf("Se abrio el archivo\n");
-
     if (arch != NULL)
     {
-        //printf("Se abrio el vmx\n");
         //leo cabecera
         fread(cabecera, sizeof(unsigned char), TAM_IDENTIFICADOR, arch);
         cabecera[5] = '\0';
-
-        //printf("Cabecera: %s\n", cabecera);
 
         //me fijo si el archivo es valido por la cabecera
         if (strcmp(cabecera, "VMX25") == 0)
@@ -153,38 +129,6 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
             
             if(mv->registros[KS] >= 0)
                 cargarKS(mv, arch);
-            //printf("Leida cabezera vmx25 \n");
-            //leo version y tamano del codigo
-            //fread(&version, 1, 1, arch);
-            //printf("Version: %d\n", version);
-            /*
-            switch(version){
-                case 1:{
-                    //printf("version 1 \n");
-                    inicializarTablaRegistrosVersion1(mv, arch);
-                    mv->version = 1;
-                    break;
-                }
-                case 2:{
-                    //printf("Entro a version 2\n");
-                    inicializarTablaRegistrosVersion2(mv, arch, tamPS);
-                    mv->version = 2;
-                    break;
-                }
-                default:{
-                    printf("Version invalida");
-                    exit(-1);
-                    break;
-                }
-            }
-            */
-            //se supone que se sale con el archivo ya leida la cabecera
-            /*
-            cargarCS(mv, arch);
-
-            if(mv->registros[KS] > 0)
-                cargarKS(mv, arch);
-            */
             fclose(arch);
         }
         else{

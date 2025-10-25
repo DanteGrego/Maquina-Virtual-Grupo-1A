@@ -125,8 +125,8 @@ void sysEscribir(Tmv* mv){
     int cantCeldas = obtenerLow(mv->registros[ECX]);
     int tamCelda = obtenerHigh(mv->registros[ECX]);
     int segmento = obtenerHigh(mv->registros[EDX]);
-    //printf("ECX: %x\n", mv->registros[ECX]);
-    //printf("Sys escribir: \nformato: %d\ncantCeldas: %d\ntamCelda:%d\nsegmento:%d\n", formato, cantCeldas, tamCelda, segmento);
+    
+    
     for(int i = 0; i < cantCeldas; i++){
         int posActual = mv->registros[EDX] + i * tamCelda;
         printf("[%04X]:", obtenerLow(obtenerDirFisica(mv, posActual)));
@@ -168,7 +168,8 @@ void SYS(Tmv* mv, int operando){
             break;
         }
         case 0xF:{
-            mv->modoDebug = 1;
+            if(mv->fileNameVmi != NULL)
+                mv->modoDebug = 1;
             break;
         }
         default:{
