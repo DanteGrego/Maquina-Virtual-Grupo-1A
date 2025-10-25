@@ -1,14 +1,5 @@
 #include "mv.h"
 
-
-void impKS(Tmv* mv){
-    if(mv->tablaSegmentos){
-
-    }
-}
-
-
-
 void impKS(Tmv* mv){
     if (mv->registros[KS] != -1){
         int aux  = obtenerHigh(mv->registros[KS]);
@@ -164,7 +155,6 @@ void disassembler(Tmv* mv) {
         int largo = snprintf(izq, sizeof(izq), "[%04X] %02X ", base + ip, ins);
 
         if (opc == 0x0F || opc == 0x0E) { // STOP o RET
-        if (opc == 0x0F || opc == 0x0E) { // STOP o RET
             int espacios = ancho_tab - largo;
             if (espacios < 1) espacios = 1;
 
@@ -178,7 +168,6 @@ void disassembler(Tmv* mv) {
             else
                 printf("%s%*s| RET\n", izq, espacios, "");
             ip += 1;
-        } else if (opc <= 0x08 || (opc >= 0x0B && opc <= 0x0D)) { // 1 operando
         } else if (opc <= 0x08 || (opc >= 0x0B && opc <= 0x0D)) { // 1 operando
             // swap
             top1 = top2;
