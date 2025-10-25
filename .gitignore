@@ -1,3 +1,14 @@
-/.vscode/*
+# Ignorar configuración local de VSCode
+.vscode/
+
+# Ignorar carpeta de compilación/debug
 /debug/*
-!debug/test.asm
+!/debug/
+!/debug/test.asm
+
+# Ignorar archivos temporales o de compilación comunes
+*.o
+*.out
+*.exe
+*.log
+*.tmp
