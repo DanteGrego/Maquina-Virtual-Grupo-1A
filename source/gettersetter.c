@@ -86,7 +86,6 @@ int obtenerDirFisica(Tmv *mv, int dirLogica)
         exit(-1);
     }else{
         int offset = obtenerLow(dirLogica);
-        //printf("(dir fisica): seg: %d, offset: %x\n", segmento, offset);
 
         //busco la base fisica con el segmento de la direccion
         int base = obtenerHigh(mv->tablaSegmentos[segmento]);
@@ -101,23 +100,19 @@ int leerValMemoria(Tmv *mv, int cantBytes, int posFisica)
     //valor leido
     int valor = 0;
 
-    //TODO habria que validar si la cantidad de bytes es > 0? porque es funcinamiento interno
-    //if (cantBytes > 0)
-    //{
-        //leo el primer byte y hago propagacion de signo
-        valor = (unsigned char)mv->memoria[posFisica];
-        valor <<= 24;
-        valor >>= 24; // escopeta goes brr
+    //leo el primer byte y hago propagacion de signo
+    valor = (unsigned char)mv->memoria[posFisica];
+    valor <<= 24;
+    valor >>= 24; // escopeta goes brr
 
 
-        //leo el restante de bytes
-        cantBytes--;
-        for (int i = 0; i < cantBytes; i++)
-        {
-            valor <<= 8;
-            valor |= (unsigned char)mv->memoria[++posFisica];
-        }
-    //}
+    //leo el restante de bytes
+    cantBytes--;
+    for (int i = 0; i < cantBytes; i++)
+    {
+        valor <<= 8;
+        valor |= (unsigned char)mv->memoria[++posFisica];
+    }
 
     return valor;
 }
@@ -159,7 +154,6 @@ int obtenerDirLogica(Tmv *mv, int valor)
     //obtengo el registro con su codigo
     int valRegistro = mv->registros[codRegistro];
 
-    //printf("codRegistro:%x\noffsetOp:%x\nvalReg:%x\n", codRegistro, offsetOp, valRegistro);
     // la direccion logica resultante sera la direccion logica del registro + el offset del operando
     return valRegistro + offsetOp;
 }
@@ -180,7 +174,6 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
         char registro = operando & 0x0000001F;
 
 
-        //printf("set registro: %x, tam: %x\n", registro, tipoTamanioRegistro);
         switch (tipoTamanioRegistro){
             case 0b00: mv->registros[registro] = valor; break;
             case 0b01: 
@@ -196,8 +189,6 @@ void setValor(Tmv *mv, int operando, int valor) // sin testear/incompleto
                 mv->registros[registro] |= valor & 0x0000FFFF;
             break;
         }
-
-        //printf("valor final: %x\n", mv->registros[registro]);
 
         break;
     }
@@ -221,12 +212,10 @@ void escribirMemoria(Tmv *mv, int dirLogica, int cantBytes, int valor, int segme
     int baseSegmento = obtenerHigh(tabla);
     int tamSegmento = obtenerLow(tabla);
 
-    //printf("dirLogica: %x\n", dirLogica);
     //actualizo LAR
     mv->registros[LAR] = dirLogica;
     //saco la direccion fisica con la logica
     int offsetFisico = obtenerDirFisica(mv, mv->registros[LAR]);
-    //printf("escribir mem: logica: %x, fis: %x, cantBytes: %d\n", dirLogica, offsetFisico, cantBytes);
 
     //valido estar dentro del segmento al que quiero acceder
     if (offsetFisico >= baseSegmento && offsetFisico + cantBytes <= baseSegmento + tamSegmento)

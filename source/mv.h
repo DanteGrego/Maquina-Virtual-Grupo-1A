@@ -65,6 +65,7 @@ int  combinarHighLow(int bytesHigh, int bytesLow);
 int  obtenerHigh(int bytes);
 int  obtenerLow(int bytes);
 char obtengoTipoOperando(int bytes);
+int bytes4AInt(unsigned char bytes[4]);
 
 //otras cuentas y accesos
 char* getExtension(char* cadena);
@@ -72,6 +73,7 @@ char* getExtension(char* cadena);
 //inicializacion
 void cargoTamMemoria(Tmv* mv, char* argumento);
 void cargarCS(Tmv* mv, FILE* arch);
+void cargarKS(Tmv* mv, FILE* arch);
 void cargarTodoMv(Tmv* mv, FILE* arch);
 void registrarSegmento(Tmv* mv, int* baseSegmento, int tamSegmento, int* indiceTabla, int segmento);
 void inicializarTablaRegistros(Tmv* mv, FILE* arch, int tamPS);
