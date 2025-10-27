@@ -1,6 +1,3 @@
-# Ignorar configuración local de VSCode
-.vscode/
-
 # Ignorar carpeta de compilación/debug
 /debug/*
 !/debug/
