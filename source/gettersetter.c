@@ -9,7 +9,7 @@ char obtengoTipoOperando(int bytes) // testeado
 }
 
 //obtengo el valor de donde tenga que ser (registro, inmediato o memoria)
-int getValor(Tmv *mv, int bytes) // sin testear/incompleto
+int getValor(Tmv *mv, int bytes)
 {
     int valor = 0;
     char tipoOperando = obtengoTipoOperando(bytes);

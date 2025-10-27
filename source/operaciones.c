@@ -60,6 +60,7 @@ void DIV (Tmv *mv, int op1, int op2){
     int cociente = valor1/valor2;
     int resto = valor1%valor2;
     //quiza estaba bien, el lunes se sabra...
+    //paso un mes y no preguntamos
     if(resto < 0){
         cociente--;
         resto = valor1 - valor2*cociente;

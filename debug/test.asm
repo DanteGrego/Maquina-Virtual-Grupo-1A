@@ -1,41 +1,66 @@
-main:   push bp
-        mov bp, sp
+t1 equ "hola como estas\n"
+t2 equ "dale un 10 porfa\n"
+t3 equ "nos dolio el 99.35 :(\n"
+t4 equ "hola mundo\n"
+t5 equ "bom dia mundo\n"
+t6 equ "konnichiwa sekai\n"
+t7 equ "hello world\n"
 
-        mov edx, ds
-        mov eax, 1
-        mov cx, 1
+main:   mov edx, KS
+        add edx, t1
+        sys 4
+
+        mov edx, KS
+        add edx, t2
+        sys 4
+
+        mov edx, KS
+        add edx, t3
+        sys 4
+
+        mov edx, KS
+        add edx, t4
+        sys 4
+        mov edx, KS
+        add edx, t5
+        sys 4
+        mov edx, KS
+        add edx, t6
+        sys 4
+        mov edx, KS
+        add edx, t7
+        sys 4
+
+        mov edx, DS
+        rnd [edx], 10
+        mov eax, 0x01
         ldh ecx, 4
-
-        mov efx, 1
-        mov [edx], efx
+        ldl ecx, 1
+        sys 2
+        sys 0xf
+        mov [DS], [SP+8]
         sys 2
 
-        mov efx, 0
-        mov fl, 1
-        mov [edx], efx
+        pop [DS]
         sys 2
-
-        mov efx, -1
-        mov [edx], efx
+        pop [DS]
         sys 2
-
-        mov efx, 0
-        mov fh, 1
-        mov [edx], efx
+        pop [DS]
         sys 2
-
-        mov efx, -1
-        mov [edx], 0
-        mov b[edx], efx
+        pop [DS]
         sys 2
-
-        mov efx, -1
-        mov [edx], 0
-        mov w[edx], efx
+        pop [DS]
         sys 2
-        
-        mov sp, bp
+        pop [DS]
+        sys 2
+        pop [DS]
+        sys 2
+        pop [DS]
+        sys 2
+        pop [DS]
+        sys 2
+        pop [DS]
+        sys 2
+        mov sp, bp 
         pop bp
         ret
-
-

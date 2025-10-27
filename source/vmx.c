@@ -98,7 +98,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
             disassembler(&mv);
 
 
-        mv.modoDebug = 0;//TODO esta bien ubicarlo aca?
+        mv.modoDebug = 0;//ahora esta bien, perdoname amigo
         while(seguirEjecutando(&mv)){
             if(mv.modoDebug){
                 sysBreakpoint(&mv);
@@ -228,5 +228,6 @@ void ejecutarInstruccion(Tmv *mv){
     else {
         printf("Codigo de operacion invalido: %d\n", opC);
         exit(-1);
+        //arreglado que antes hacia exit(-2)
     }
 }
