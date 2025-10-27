@@ -21,20 +21,18 @@ void impKS(Tmv* mv){
            
 
             int inicio = i;   // guardo inicio de la palabra
-            int n = 0;       // largo de la palabra (en chars)
+            int n = 0;       // largo de la palabra 
 
-            // ---- IZQUIERDA: dirección ----
             int col = 0;
             col += printf(" [%04X] ", i);
 
-            // ---- recorro palabra completa para contar n y mostrar hasta 6 bytes en hex ----
             while (i < base + tam && mv->memoria[i] != '\0'){
                 unsigned char car = (unsigned char)mv->memoria[i];
 
                 if (n < 6) {
                     col += printf("%02X ", car);
                 } else if (n == 6) {
-                    col += printf("..");   // hay más de 6 bytes -> trunc en la izquierda
+                    col += printf("..");   
                 }
                 n++;
                 i++;
@@ -43,12 +41,10 @@ void impKS(Tmv* mv){
             if (n <= 6 && mv->memoria[i] == '\0')
                 col += printf("%02X ", (unsigned char)mv->memoria[i]);
 
-            // ---- alineación de la barra usando lo impreso a la izquierda ----
             int espacios = ancho_tab - col;
             if (espacios < 1) espacios = 1;
             while (espacios--) printf(" ");
 
-            // ---- DERECHA: palabra completa (todos los n chars) ----
             printf(" | \"");
             for (int j = 0; j < n; j++){
                 unsigned char c = (unsigned char)mv->memoria[inicio + j];
@@ -56,7 +52,6 @@ void impKS(Tmv* mv){
             }
             printf("\"\n");
 
-            // ---- saltar '\0' si existe ----
             if (i < base + tam && mv->memoria[i] == '\0') i++;
         }
     }
@@ -129,19 +124,12 @@ void disassembler(Tmv* mv) {
     int entryPoint = obtenerLow(mv->registros[IP]) + base;
     int ip = base;
     
-
-    // ancho de la línea completa antes de la barra
     const int ancho_tab = 32;
 
-    //imprime K segment si existe
-
-
-    //imprime K segment si existe
     impKS(mv);
 
     while (ip < tam + base) {
         unsigned char ins  = mv->memoria[ip];
-        // como mv con registros pero acá son variables temporales
         unsigned char opc  = ins & 0x1F;
         unsigned char top2 = (ins >> 6) & 0x03;
         unsigned char top1 = (ins >> 4) & 0x03;
@@ -164,7 +152,7 @@ void disassembler(Tmv* mv) {
         int largo = snprintf(izq, sizeof(izq), "[%04X] %02X ", base + ip, ins);
 
         if (opc == 0x0F || opc == 0x0E) { // STOP o RET
-        if (opc == 0x0F || opc == 0x0E) { // STOP o RET
+        
             int espacios = ancho_tab - largo;
             if (espacios < 1) espacios = 1;
 
@@ -178,7 +166,6 @@ void disassembler(Tmv* mv) {
             else
                 printf("%s%*s| RET\n", izq, espacios, "");
             ip += 1;
-        } else if (opc <= 0x08 || (opc >= 0x0B && opc <= 0x0D)) { // 1 operando
         } else if (opc <= 0x08 || (opc >= 0x0B && opc <= 0x0D)) { // 1 operando
             // swap
             top1 = top2;
