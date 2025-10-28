@@ -128,6 +128,14 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
             
             if(mv->registros[KS] >= 0)
                 cargarKS(mv, arch);
+
+            /*
+            for(int i = CS; i < PS; i++){
+                printf("\n\n");
+                printf("Tabla: %x\n", mv->tablaSegmentos[i-CS]);
+                printf("Registro: %x\n", mv->registros[i]);
+            }
+            */
             fclose(arch);
         }
         else{
@@ -144,7 +152,7 @@ void leerArchivoVmx(Tmv *mv, int tamPS)
 }
 
 int bytes4AInt(unsigned char bytes[4]){
-    int res = 0;
+    unsigned int res = 0;
     for(int i = 0; i < 4; i++)
         res += bytes[i] << (3-i) * 8;
     return res;
@@ -153,19 +161,22 @@ int bytes4AInt(unsigned char bytes[4]){
 void cargarTodoMv(Tmv* mv, FILE* arch){
     unsigned char lecturaTams[4];
     fread(lecturaTams, 1, 2, arch);
-    mv->tamMemoria = lecturaTams[0] << 8 + lecturaTams[1];
+    mv->tamMemoria = ((lecturaTams[0] << 8) + lecturaTams[1]) * 1024;
+    printf("Tam: %x\n", mv->tamMemoria);
     mv->memoria = (char*) malloc(mv->tamMemoria);
 
     for(int i = 0; i < CANT_REGISTROS; i++){
         fread(lecturaTams, 1, 4, arch);
         mv->registros[i] = bytes4AInt(lecturaTams);
+        printf("registro %i: %x\n", i, mv->registros[i]);
     }
 
     for(int i = 0; i < CANT_SEGMENTOS; i++){
         fread(lecturaTams, 1, 4, arch);
         mv->tablaSegmentos[i] = bytes4AInt(lecturaTams);
+        printf("tabla %i: %x\n", i, mv->tablaSegmentos[i]);
     }
-   
+    
     fread(mv->memoria, 1, mv->tamMemoria, arch);
 }
 
