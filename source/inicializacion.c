@@ -162,7 +162,7 @@ void cargarTodoMv(Tmv* mv, FILE* arch){
     unsigned char lecturaTams[4];
     fread(lecturaTams, 1, 2, arch);
     mv->tamMemoria = ((lecturaTams[0] << 8) + lecturaTams[1]) * 1024;
-    printf("Tam: %x\n", mv->tamMemoria);
+    //printf("Tam: %x\n", mv->tamMemoria);
     mv->memoria = (char*) malloc(mv->tamMemoria);
 
     for(int i = 0; i < CANT_REGISTROS; i++){
