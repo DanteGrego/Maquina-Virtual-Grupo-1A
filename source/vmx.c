@@ -74,14 +74,7 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
                     tamPS += 4;
                 }
 
-                //printf("Cargo ps\n");
-
                 leerArchivoVmx(&mv, tamPS);
-
-                //printf("Leyo vmx\n");
-
-                //for(int i = 0; i < 200; i++)
-                //    printf("%x: %x\n", i, (unsigned char)mv.memoria[i]);
 
                 if(mv.registros[SS] >= 0){
                     if(tamPS == 0)
@@ -106,7 +99,6 @@ int main(int numeroArgumentos, char *vectorArgumentos[])
 
         mv.modoDebug = 0;//ahora esta bien, perdoname amigo
         while(seguirEjecutando(&mv)){
-            //printf("Ip: %x\n", mv.registros[IP]);
             if(mv.modoDebug){
                 sysBreakpoint(&mv);
                 switch(getchar()){

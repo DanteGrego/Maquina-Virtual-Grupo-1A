@@ -40,7 +40,7 @@
 			"type": "shell",
 			"command": "${workspaceFolder}/debug/vmx.exe",
 			"args": [
-				"${workspaceFolder}/debug/sample.vmx",
+				"${workspaceFolder}/debug/test.vmx",
 				"${workspaceFolder}/debug/test.vmi",
 				"-d"
 			],
@@ -51,6 +51,9 @@
 				"focus": true,
 				"panel": "shared"
 			},
+			"dependsOn":[
+				"Ejecutar vmt.exe"
+			],
 			"dependsOrder": "sequence",
 			"problemMatcher": []
 		},

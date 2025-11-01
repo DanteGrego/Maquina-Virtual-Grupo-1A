@@ -252,8 +252,6 @@ void sysStringWrite(Tmv* mv){
     int i = 1;
     char c;
 
-    //printf("posActual: %x\n", posActual);
-
     leerMemoria(mv, posActual, 1, segmento);
     c = mv->registros[MBR];
 
